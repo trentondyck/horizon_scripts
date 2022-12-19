@@ -20,5 +20,13 @@ update(){
 
 }
 
+launch(){
+
+	steam_id=$(grep -sir "Horizon XI" /home/deck/.local/share/Steam/userdata/ | grep screenshots | awk '{print $2}' | sed 's/"//g')
+        steam steam://rungameid/${steam_id}
+
+}
+
 update
+launch
 
