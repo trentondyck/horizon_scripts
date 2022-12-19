@@ -3,7 +3,7 @@ Check out [vaughan's gist](https://github.com/hilts-vaughan/hilts-vaughan.github
 
 This script will update the horizon launcher, and start the game. Pre-requisite is adding the game to your steam library with name "Horizon XI"
 
-otherwise just download this script, and run like so in konsole:
+Just download this script, and run like so in konsole:
 
 ```
 ./update-horizon.sh

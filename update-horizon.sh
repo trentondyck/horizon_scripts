@@ -1,14 +1,43 @@
 #!/bin/bash
 
+init(){
+	export horizon_json=$(curl https://api.github.com/repos/HorizonFFXI/HorizonXI-Launcher-Binaries/releases | jq '.')
+	export latest_version=$(echo ${horizon_json} | jq -r '.[].name' | head -n1)
+	export download_url=$(echo ${horizon_json} | jq -r '.[] | select(.tag_name=="'${latest_version}'") | .assets[] | select ( .name | endswith ("exe") ) | .browser_download_url')
+	export nupkg_name=$(echo ${horizon_json} | jq -r '.[] | select(.tag_name=="'${latest_version}'") | .assets[] | select ( .name | endswith ("nupkg") ) | .name ')
+}
+
+
+check(){
+
+	echo "Checking for version update..."
+	if [[ -f ~/horizon-xi/current_version ]]; then
+		current_version=$(cat ~/horizon-xi/current_version)
+		echo "Installed version: $current_version"
+		echo "Latest version: $latest_version"
+		if [[ ${current_version} == ${latest_version} ]]; then
+			echo "Latest already installed, nothing to do!"
+		else
+			echo "Updating and launching"
+			update
+			launch
+			echo "$latest_version" > ~/horizon-xi/current_version
+		fi
+	else
+		echo "No current_version exists, updating and logging"
+		echo "Updating and launching"
+		update
+		launch
+		echo "$latest_version" > ~/horizon-xi/current_version
+	fi
+
+}
+
 update(){
 
 	echo "Creating required directories..."
 	mkdir -p ~/horizon-xi
-	horizon_json=$(curl https://api.github.com/repos/HorizonFFXI/HorizonXI-Launcher-Binaries/releases | jq '.')
-	latest_version=$(echo ${horizon_json} | jq -r '.[].name' | head -n1)
 	echo "Found latest version... $latest_version"
-	download_url=$(echo ${horizon_json} | jq -r '.[] | select(.tag_name=="'${latest_version}'") | .assets[] | select ( .name | endswith ("exe") ) | .browser_download_url')
-	nupkg_name=$(echo ${horizon_json} | jq -r '.[] | select(.tag_name=="'${latest_version}'") | .assets[] | select ( .name | endswith ("nupkg") ) | .name ')
 	echo "Downloading... $download_url"
 	curl -L --max-redirs 5 --output ~/horizon-xi/installer.exe "${download_url}"
 	cd ~/horizon-xi
@@ -27,6 +56,6 @@ launch(){
 
 }
 
-update
-launch
+init
+check
 
