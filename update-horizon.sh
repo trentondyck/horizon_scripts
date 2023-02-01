@@ -53,6 +53,11 @@ update(){
 	7z -y x installer.exe
 	echo "Expanding ${nupkg_name}..."
 	7z -y x ${nupkg_name}
+	if [[ ${latest_version} == "v1.0.1" ]]; then
+		echo "Add a non-steam game now to steam, then re-run update-horizon.sh"
+		echo "TARGET: \"/home/deck/horizon-xi/lib/net45/HorizonXI-Launcher.exe\""
+		echo "START IN: \"/home/deck/horizon-xi/lib/net45/\""
+	fi
 	echo "Done!"
 
 }
