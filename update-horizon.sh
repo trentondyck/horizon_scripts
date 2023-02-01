@@ -61,7 +61,18 @@ update(){
 			echo "Steam is not running, manually start steam and add the game as per the instructions above"
 			exit 2
 		else
+			# Install ProtonQT - https://github.com/DavidoTek/ProtonUp-Qt/releases/download/v2.7.7/ProtonUp-Qt-2.7.7-x86_64.AppImage
+			echo "Install ProtonQT via the discover store"
+			# Install GE-Proton
+			echo "Install GE-Proton via ProtonQT"
+			# If someone can decipher this: https://developer.valvesoftware.com/wiki/Add_Non-Steam_Game
+			# maybe we can automate the game shortcut installation. until then, a manual effort:
 			steam steam://AddNonSteamGame
+			echo "Right click the new entry, hit Properties > Compatibility"
+			echo "Change to the new version of Proton GE you just installed"
+			echo "After the game launches, complete the download before running update-horizon.sh again"
+			echo "After the download is completed, you can run the following command to clean up space"
+			echo "sudo find /home -name \"HorizonXI.zip\" -type f | sed 's/ /\\\\ /g' | xargs -i rm {}"
 		fi
 	fi
 	echo "Done!"
