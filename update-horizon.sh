@@ -57,7 +57,12 @@ update(){
 		echo "Add a non-steam game now to steam, then re-run update-horizon.sh"
 		echo "TARGET: \"/home/deck/horizon-xi/lib/net45/HorizonXI-Launcher.exe\""
 		echo "START IN: \"/home/deck/horizon-xi/lib/net45/\""
-		steam steam://AddNonSteamGame
+		if [[ $(ps -ef | grep steam | wc -l) -le 12 ]]; then
+			echo "Steam is not running, manually start steam and add the game as per the instructions above"
+			exit 2
+		else
+			steam steam://AddNonSteamGame
+		fi
 	fi
 	echo "Done!"
 
@@ -66,8 +71,12 @@ update(){
 launch(){
 
 	steam_id=$(grep -sir "Horizon XI" /home/deck/.local/share/Steam/userdata/ | grep screenshots | awk '{print $2}' | sed 's/"//g')
-        steam steam://rungameid/${steam_id}
-
+	if [[ $(ps -ef | grep steam | wc -l) -le 12 ]]; then
+		echo "Steam is not running. Start steam and try again"
+		exit 2
+	else
+        	steam steam://rungameid/${steam_id}
+	fi
 }
 
 init
