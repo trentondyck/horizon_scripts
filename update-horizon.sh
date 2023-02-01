@@ -61,10 +61,16 @@ update(){
 			echo "Steam is not running, manually start steam and add the game as per the instructions above"
 			exit 2
 		else
-			# Install ProtonQT - https://github.com/DavidoTek/ProtonUp-Qt/releases/download/v2.7.7/ProtonUp-Qt-2.7.7-x86_64.AppImage
-			echo "Install ProtonQT via the discover store"
+			# Install ProtonQT
+			proton_json=$(curl https://api.github.com/repos/DavidoTek/ProtonUp-Qt/releases | jq '.')
+			latest_p_version=$(echo ${proton_json} | jq -r '.[].tag_name' | head -n1)
+			proton_qt_release_url=$(echo ${proton_json} | jq -r '.[] | select(.tag_name=="'${latest_p_version}'") | .assets | .[].browser_download_url' | grep -v zsync)
+	                curl -L --max-redirs 5 --output ~/horizon-xi/proton_qt.AppImage "${proton_qt_release_url}"
+			chmod +x ~/horizon-xi/proton_qt.AppImage
+			(~/horizon-xi/proton_qt.AppImage &>/dev/null) &
 			# Install GE-Proton
-			echo "Install GE-Proton via ProtonQT"
+			echo "Launching ProtonQT..."
+			read -p "Install GE-Proton via ProtonQT, after adding proton, hit enter to continue" </dev/tty
 			# If someone can decipher this: https://developer.valvesoftware.com/wiki/Add_Non-Steam_Game
 			# maybe we can automate the game shortcut installation. until then, a manual effort:
 			steam steam://AddNonSteamGame
