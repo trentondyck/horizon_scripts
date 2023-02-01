@@ -57,6 +57,7 @@ update(){
 		echo "Add a non-steam game now to steam, then re-run update-horizon.sh"
 		echo "TARGET: \"/home/deck/horizon-xi/lib/net45/HorizonXI-Launcher.exe\""
 		echo "START IN: \"/home/deck/horizon-xi/lib/net45/\""
+		steam steam://AddNonSteamGame
 	fi
 	echo "Done!"
 
