@@ -15,3 +15,6 @@ Just download this script, and run like so in konsole:
 ```
 
 For any update after the first you can copy to your desktop and run it with double click.
+
+#### Support
+Send gil to Fatso if you want to support the author
