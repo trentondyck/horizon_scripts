@@ -12,6 +12,8 @@ init(){
 	export horizon_json=$(curl https://api.github.com/repos/HorizonFFXI/HorizonXI-Launcher-Binaries/releases | jq '.')
 	if [[ ${base_downloaded_boolean} == "true" && ${base_extracted_boolean} == "true" && ${updater_downloaded_boolean} == "true" && ${updater_extracted_boolean} == "true" ]]; then
 		export latest_version=$(echo ${horizon_json} | jq -r '.[].name' | head -n1)
+		# Since everythings done downloading we can clean up
+		sudo find /home -name "HorizonXI.zip" -type f | sed 's/ /\\ /g' | xargs -i rm {}
 	else
 		# Let's hard code latest version to v1.0.1, since the installer isn't complete we need to download & complete the install on v1.0.1 before updating
 		# See Note: https://github.com/hilts-vaughan/hilts-vaughan.github.io/blob/master/_posts/2022-12-16-installing-horizon-xi-linux.md#install-horizonxi---steam-play-steam-deck--other-systems
@@ -77,9 +79,9 @@ update(){
 			echo "Right click the new entry, hit Properties > Compatibility"
 			echo "Change to the new version of Proton GE you just installed"
 			echo "After the game launches, complete the download before running update-horizon.sh again"
-			echo "After the download is completed, you can run the following command to clean up space"
-			echo "sudo find /home -name \"HorizonXI.zip\" -type f | sed 's/ /\\\\ /g' | xargs -i rm {}"
 		fi
+	else
+		# Latest version is not v1.0.1
 	fi
 	echo "Done!"
 
