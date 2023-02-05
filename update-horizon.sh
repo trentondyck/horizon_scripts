@@ -82,10 +82,13 @@ update(){
 			steam steam://AddNonSteamGame
 			echo "Right click the new entry, hit Properties > Compatibility"
 			echo "Change to the new version of Proton GE you just installed"
+			echo "You should pick C:\\Program Files when prompted for an install path."
+			echo "You should not pick anything else. You can move compatdata to an SD card later if needed."
 			echo "After the game launches, complete the download before running update-horizon.sh again"
 		fi
 	else
 		# Latest version is not v1.0.1
+		echo "Continue..."
 	fi
 	echo "Done!"
 
