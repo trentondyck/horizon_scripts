@@ -2,6 +2,10 @@
 
 init(){
 
+	if [[ $(df -h | grep " /home$" | awk '{print $4}' | sed 's/G//g') -le 60 ]]; then
+		echo "You don't have enough disk space, clean up some disk or follow the guide to install on an SD card"
+		exit 2
+	fi
 	export config_json=$(sudo find /home/deck/.local/share/Steam/steamapps/compatdata/ -name config.json -type f | grep HorizonXI)
 	export config_prefix=$(echo $config_json | sed 's/config.json$//g')
 	export storage_json=$(echo ${config_prefix}storage.json)
