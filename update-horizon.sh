@@ -2,9 +2,12 @@
 
 init(){
 
+	export sd_link="false"
 	if [[ $(df -h | grep " /home$" | awk '{print $4}' | sed 's/G//g') -le 60 ]]; then
-		echo "You don't have enough disk space, clean up some disk or follow the guide to install on an SD card"
-		exit 2
+		export compat_size=$((cd /home/deck/.local/share/Steam/steamapps && du --max-depth 1 -h) | grep compatdata | awk '{print $1}' | sed 's/G//g')
+		export home_free_space=$(df -h | grep " /home$" | awk '{print $4}' | sed 's/G//g')
+		export card_free_space=$(df -h | grep "/run/media" | awk '{print $4}' | sed 's/G//g')
+		export sd_link="true"
 	fi
 	export config_json=$(sudo find /home/deck/.local/share/Steam/steamapps/compatdata/ -name config.json -type f | grep HorizonXI)
 	export config_prefix=$(echo $config_json | sed 's/config.json$//g')
@@ -85,6 +88,21 @@ update(){
 			echo "You should pick C:\\Program Files when prompted for an install path."
 			echo "You should not pick anything else. You can move compatdata to an SD card later if needed."
 			echo "After the game launches, complete the download before running update-horizon.sh again"
+			# Low disk space version
+			if [[ "${sd_link}" == "true" ]]; then
+				read -p "Not enough disk space found on the main /home drive, install to SD Card? (Enter to continue, Ctrl + c to abort" </dev/tty
+				if [[ ${card_free_space} -le 60 ]]; then
+					echo "There's not enough space on the memory card either. aborting installation"
+					exit 2
+				fi
+				if [[ ${home_free_space} -le ${compat_size} ]]; then
+					read -p "Theres not enough space to make a backup, continue without backup? (Enter to continue, Ctrl + c to abort)" </dev/tty
+				fi
+				cp -r /home/deck/.local/share/Steam/steamapps/compatdata/* /run/media/mmcblk0p1/steamapps/compatdata/
+				mv /home/deck/.local/share/Steam/steamapps/compatdata /home/deck/.local/share/Steam/steamapps/compatdata_backup
+				cd /home/deck/.local/share/Steam/steamapps
+				ln -s /run/media/mmcblk0p1/steamapps/compatdata
+			fi
 		fi
 	else
 		# Latest version is not v1.0.1
