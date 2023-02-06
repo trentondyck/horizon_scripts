@@ -85,9 +85,6 @@ update(){
 			steam steam://AddNonSteamGame
 			echo "Right click the new entry, hit Properties > Compatibility"
 			echo "Change to the new version of Proton GE you just installed"
-			echo "You should pick C:\\Program Files when prompted for an install path."
-			echo "You should not pick anything else. You can move compatdata to an SD card later if needed."
-			echo "After the game launches, complete the download before running update-horizon.sh again"
 			# Low disk space version
 			if [[ "${sd_link}" == "true" ]]; then
 				read -p "Not enough disk space found on the main /home drive, install to SD Card? (Enter to continue, Ctrl + c to abort" </dev/tty
@@ -103,6 +100,10 @@ update(){
 				cd /home/deck/.local/share/Steam/steamapps
 				ln -s /run/media/mmcblk0p1/steamapps/compatdata
 			fi
+			echo "You should pick C:\\Program Files when prompted for an install path."
+			echo "You should not pick anything else. You can move compatdata to an SD card later if needed."
+			echo "After the game launches, complete the download before running update-horizon.sh again"
+			echo "If the launcher is stuck 'verifying game files', or it opens and minimizes/exits immediately, try downloading in game mode"
 		fi
 	else
 		# Latest version is not v1.0.1
