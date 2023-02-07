@@ -94,11 +94,15 @@ update(){
 				fi
 				if [[ ${home_free_space} -le ${compat_size} ]]; then
 					read -p "Theres not enough space to make a backup, continue without backup? (Enter to continue, Ctrl + c to abort)" </dev/tty
+					cp -r /home/deck/.local/share/Steam/steamapps/compatdata/* /run/media/mmcblk0p1/steamapps/compatdata/
+					cd /home/deck/.local/share/Steam/steamapps
+					ln -s /run/media/mmcblk0p1/steamapps/compatdata
+				else
+					cp -r /home/deck/.local/share/Steam/steamapps/compatdata/* /run/media/mmcblk0p1/steamapps/compatdata/
+					mv /home/deck/.local/share/Steam/steamapps/compatdata /home/deck/.local/share/Steam/steamapps/compatdata_backup
+					cd /home/deck/.local/share/Steam/steamapps
+					ln -s /run/media/mmcblk0p1/steamapps/compatdata
 				fi
-				cp -r /home/deck/.local/share/Steam/steamapps/compatdata/* /run/media/mmcblk0p1/steamapps/compatdata/
-				mv /home/deck/.local/share/Steam/steamapps/compatdata /home/deck/.local/share/Steam/steamapps/compatdata_backup
-				cd /home/deck/.local/share/Steam/steamapps
-				ln -s /run/media/mmcblk0p1/steamapps/compatdata
 			fi
 			echo "You should pick C:\\Program Files when prompted for an install path."
 			echo "You should not pick anything else. You can move compatdata to an SD card later if needed."
