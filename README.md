@@ -11,7 +11,7 @@ This script should:
 Just download this script, and run like so in konsole:
 
 ```
-./update-horizon.sh
+./install-or-update-horizon.sh
 ```
 
 For any update after the first you can copy to your desktop and run it with double click.
