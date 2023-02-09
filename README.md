@@ -24,6 +24,11 @@ Just download this script, and run like so in konsole:
 ./install-or-update-horizon.sh
 ```
 
+Or, for the incredibly lazy, open konsole, and paste:
+```
+(curl -L --max-redirs 5 --output ./install-or-update-horizon.sh https://raw.githubusercontent.com/trentondyck/horizon_scripts/main/install-or-update-horizon.sh) && chmod +x install-or-update-horizon.sh && ./install-or-update-horizon.sh
+```
+
 For any update after the first you can copy to your desktop and run it with double click.
 
 ### Uninstallation
