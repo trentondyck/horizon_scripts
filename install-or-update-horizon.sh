@@ -64,11 +64,13 @@ add_non_steam_game(){
 	        latest_stl_version=$(echo ${stl_json} | jq -r '.[].tag_name' | head -n1)
 	        stl_zip_url=$(echo ${stl_json} | jq -r '.[] | select(.tag_name=="'${latest_stl_version}'") | .zipball_url')
 	        echo "Downloading... ${stl_zip_url}"
+		curl -L --max-redirs 5 --output /home/deck/horizon-xi/stl.zip "${stl_zip_url}"
+		unzip /home/deck/horizon-xi/stl.zip
 	fi
 
 	# 2 Add a non-steam game via stl
 	# docs - https://github.com/sonic2kk/steamtinkerlaunch/wiki/Add-Non-Steam-Game
-	./steamtinkerlaunch addnonsteamgame --appname="${app_name}" --exepath=/home/deck/horizon-xi/lib/net45/HorizonXI-Launcher.exe --startdir=/home/deck/horizon-xi/lib/net45/
+	/home/deck/horizon-xi/stl/steamtinkerlaunch addnonsteamgame --appname="${app_name}" --exepath=/home/deck/horizon-xi/lib/net45/HorizonXI-Launcher.exe --startdir=/home/deck/horizon-xi/lib/net45/
 
 	# 3 Download pip
 	if [[ $(which /home/deck/.local/bin/pip) ]]; then 
@@ -97,11 +99,11 @@ add_non_steam_game(){
 update(){
 
 	echo "Creating required directories..."
-	mkdir -p ~/horizon-xi
+	mkdir -p /home/deck/horizon-xi
 	echo "Found latest version... $latest_version"
 	echo "Downloading... $download_url"
-	curl -L --max-redirs 5 --output ~/horizon-xi/installer.exe "${download_url}"
-	cd ~/horizon-xi
+	curl -L --max-redirs 5 --output /home/deck/horizon-xi/installer.exe "${download_url}"
+	cd /home/deck/horizon-xi
 	echo "Expanding installers..."
 	7z -y x installer.exe
 	echo "Expanding ${nupkg_name}..."
@@ -118,9 +120,9 @@ update(){
 			proton_json=$(curl https://api.github.com/repos/DavidoTek/ProtonUp-Qt/releases | jq '.')
 			latest_p_version=$(echo ${proton_json} | jq -r '.[].tag_name' | head -n1)
 			proton_qt_release_url=$(echo ${proton_json} | jq -r '.[] | select(.tag_name=="'${latest_p_version}'") | .assets | .[].browser_download_url' | grep -v zsync)
-	                curl -L --max-redirs 5 --output ~/horizon-xi/proton_qt.AppImage "${proton_qt_release_url}"
-			chmod +x ~/horizon-xi/proton_qt.AppImage
-			(~/horizon-xi/proton_qt.AppImage &>/dev/null) &
+	                curl -L --max-redirs 5 --output /home/deck/horizon-xi/proton_qt.AppImage "${proton_qt_release_url}"
+			chmod +x /home/deck/horizon-xi/proton_qt.AppImage
+			(/home/deck/horizon-xi/proton_qt.AppImage &>/dev/null) &
 			# Install GE-Proton
 			echo "Launching ProtonQT..."
 			read -p "Install GE-Proton via ProtonQT, after adding proton, hit enter to continue" </dev/tty
