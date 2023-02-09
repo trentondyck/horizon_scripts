@@ -99,6 +99,10 @@ add_non_steam_game(){
 	# Documentation - https://github.com/ValvePython/vdf
 	python -c "import vdf; d=vdf.load(open('${config_vdf}')); ctm = d['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping']; ctm['${app_id}']={ 'name': 'GE-Proton7-42', 'config': '', 'priority': '250' }; vdf.dump(d, open('/home/deck/horizon-xi/config.vdf','w'), pretty=True);"
         cp -f /home/deck/horizon-xi/config.vdf $config_vdf
+	# Restart steam
+	killall steam
+	sleep 10
+	(steam &>/dev/null) &
 	echo "Successfully added nonsteam game"
 
 }
