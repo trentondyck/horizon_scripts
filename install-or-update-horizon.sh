@@ -109,9 +109,6 @@ update(){
 	echo "Expanding ${nupkg_name}..."
 	7z -y x ${nupkg_name}
 	if [[ ${latest_version} == "v1.0.1" ]]; then
-		echo "Add a non-steam game now to steam, then re-run update-horizon.sh"
-		echo "TARGET: \"/home/deck/horizon-xi/lib/net45/HorizonXI-Launcher.exe\""
-		echo "START IN: \"/home/deck/horizon-xi/lib/net45/\""
 		if [[ $(ps -ef | grep steam | wc -l) -le 12 ]]; then
 			echo "Steam is not running, manually start steam and add the game as per the instructions above"
 			exit 2
