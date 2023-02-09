@@ -10,6 +10,11 @@ init(){
 		export sd_link="true"
 	fi
 	export config_json=$(sudo find /home/deck/.local/share/Steam/steamapps/compatdata/ -name config.json -type f | grep HorizonXI)
+	if [[ $(echo $config_json | sed 's/ /\n/g' | wc -l) -gt 1 ]]; then
+		echo "too many installations found. try uninstalling one of them"
+		echo $config_json | sed 's/ /\n/g'
+		exit 2
+	fi
 	export config_prefix=$(echo $config_json | sed 's/config.json$//g')
 	export storage_json=$(echo ${config_prefix}storage.json)
 	export base_downloaded_boolean=$(cat $storage_json | jq '.GAME_UPDATER.baseGame.downloaded')
@@ -145,8 +150,25 @@ update(){
 					ln -s /run/media/mmcblk0p1/steamapps/compatdata
 				fi
 			fi
+
+			# Unsure about spacing, anyways hoping this allows the user to not have to set the install directory
+python << END
+import json
+
+f = open('${storage_json}')
+data = json.load(f)
+data['paths']['installPath']['path']='C:\\Program Files\\HorizonXI\\Game'
+with open("${storage_json}", "w") as outfile:
+  json.dump(data, outfile, indent=4)
+
+END
+
+			# I'll leave this help text until the above is tested/verified
 			echo "You should pick C:\\Program Files when prompted for an install path."
 			echo "You should not pick anything else. You can move compatdata to an SD card later if needed."
+
+			# Necessary help text
+			echo "Sometimes you may have to launch the game multiple times initially to get it working"
 			echo "After the game launches, complete the download before running update-horizon.sh again"
 			echo "If the launcher is stuck 'verifying game files', or it opens and minimizes/exits immediately, try downloading in game mode"
 		fi
