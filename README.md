@@ -1,6 +1,16 @@
 # horizon_scripts
 Check out [vaughan's gist](https://github.com/hilts-vaughan/hilts-vaughan.github.io/blob/master/_posts/2022-12-16-installing-horizon-xi-linux.md#install-horizonxi---steam-play-steam-deck--other-systems) for the step-by-step instructions if you run into trouble.
 
+### Prerequisites
+
+Set up a memorable sudo password in konsole. i.e.
+
+```
+passwd
+```
+
+### Installation
+
 This script should:
 - see if you don't have the base game downloaded & extracted
 - attempt to download/install v1.0.1
