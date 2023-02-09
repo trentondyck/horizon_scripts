@@ -20,7 +20,9 @@ init(){
 	if [[ ${base_downloaded_boolean} == "true" && ${base_extracted_boolean} == "true" && ${updater_downloaded_boolean} == "true" && ${updater_extracted_boolean} == "true" ]]; then
 		export latest_version=$(echo ${horizon_json} | jq -r '.[].name' | head -n1)
 		# Since everythings done downloading we can clean up
+		echo "Searching home directory for horizon zip, this may take a while..."
 		sudo find /home -name "HorizonXI.zip" -type f | sed 's/ /\\ /g' | xargs -i rm {}
+		export current_version=$(cat $config_json | jq -r '.__internal__.migrations.version' | sed 's/^/v/g')
 	else
 		# Let's hard code latest version to v1.0.1, since the installer isn't complete we need to download & complete the install on v1.0.1 before updating
 		# See Note: https://github.com/hilts-vaughan/hilts-vaughan.github.io/blob/master/_posts/2022-12-16-installing-horizon-xi-linux.md#install-horizonxi---steam-play-steam-deck--other-systems
@@ -28,7 +30,6 @@ init(){
 	fi
 	export download_url=$(echo ${horizon_json} | jq -r '.[] | select(.tag_name=="'${latest_version}'") | .assets[] | select ( .name | endswith ("exe") ) | .browser_download_url')
 	export nupkg_name=$(echo ${horizon_json} | jq -r '.[] | select(.tag_name=="'${latest_version}'") | .assets[] | select ( .name | endswith ("nupkg") ) | .name ')
-	export current_version=$(cat $config_json | jq -r '.__internal__.migrations.version' | sed 's/^/v/g')
 	echo "storage_json: $storage_json"
 	echo "latest_version: $latest_version"
 	echo "current_version: $current_version"
@@ -83,6 +84,7 @@ update(){
 			# If someone can decipher this: https://developer.valvesoftware.com/wiki/Add_Non-Steam_Game
 			# maybe we can automate the game shortcut installation. until then, a manual effort:
 			steam steam://AddNonSteamGame
+			echo "Install by browsing to /home/deck/horixon-xi/lib/net45 & select file type All files. Choose HorizonXI-Launcher.exe"
 			echo "Right click the new entry, hit Properties > Compatibility"
 			echo "Change to the new version of Proton GE you just installed"
 			# Low disk space version
@@ -94,10 +96,12 @@ update(){
 				fi
 				if [[ ${home_free_space} -le ${compat_size} ]]; then
 					read -p "Theres not enough space to make a backup, continue without backup? (Enter to continue, Ctrl + c to abort)" </dev/tty
+					mkdir -p "/run/media/mmcblk0p1/steamapps/compatdata"
 					cp -r /home/deck/.local/share/Steam/steamapps/compatdata/* /run/media/mmcblk0p1/steamapps/compatdata/
 					cd /home/deck/.local/share/Steam/steamapps
 					ln -s /run/media/mmcblk0p1/steamapps/compatdata
 				else
+					mkdir -p "/run/media/mmcblk0p1/steamapps/compatdata"
 					cp -r /home/deck/.local/share/Steam/steamapps/compatdata/* /run/media/mmcblk0p1/steamapps/compatdata/
 					mv /home/deck/.local/share/Steam/steamapps/compatdata /home/deck/.local/share/Steam/steamapps/compatdata_backup
 					cd /home/deck/.local/share/Steam/steamapps
