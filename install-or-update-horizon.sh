@@ -63,7 +63,7 @@ add_non_steam_game(){
 
 	# Source - https://github.com/sonic2kk/steamtinkerlaunch/issues/729
 	# 1 Download the latest release
-	if [[ $( which /home/deck/horizon-xi/stl/steamtinkerlaunch ) ]]; then
+	if [[ $( which /home/deck/horizon-xi/stl/sonic2kk-steamtinkerlaunch-e7c5ada/steamtinkerlaunch ) ]]; then
 	        echo "Steam tinker launch already installed, continuing..."
 	else
 	        stl_json=$(curl https://api.github.com/repos/sonic2kk/steamtinkerlaunch/releases)
@@ -71,12 +71,12 @@ add_non_steam_game(){
 	        stl_zip_url=$(echo ${stl_json} | jq -r '.[] | select(.tag_name=="'${latest_stl_version}'") | .zipball_url')
 	        echo "Downloading... ${stl_zip_url}"
 		curl -L --max-redirs 5 --output /home/deck/horizon-xi/stl.zip "${stl_zip_url}"
-		unzip /home/deck/horizon-xi/stl.zip
+		unzip /home/deck/horizon-xi/stl.zip -d /home/deck/horixon-xi/stl
 	fi
 
 	# 2 Add a non-steam game via stl
 	# docs - https://github.com/sonic2kk/steamtinkerlaunch/wiki/Add-Non-Steam-Game
-	/home/deck/horizon-xi/stl/steamtinkerlaunch addnonsteamgame --appname="${app_name}" --exepath=/home/deck/horizon-xi/lib/net45/HorizonXI-Launcher.exe --startdir=/home/deck/horizon-xi/lib/net45/
+	/home/deck/horizon-xi/stl/sonic2kk-steamtinkerlaunch-e7c5ada/steamtinkerlaunch addnonsteamgame --appname="${app_name}" --exepath=/home/deck/horizon-xi/lib/net45/HorizonXI-Launcher.exe --startdir=/home/deck/horizon-xi/lib/net45/
 
 	# 3 Download pip
 	if [[ $(which /home/deck/.local/bin/pip) ]]; then 
