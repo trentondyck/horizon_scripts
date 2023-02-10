@@ -3,14 +3,18 @@ set -e
 
 init(){
 
+	export app_name="Horizon XI"
+	export raw_github_url="https://raw.githubusercontent.com/trentondyck/horizon_scripts/main"
 	export sd_link="false"
+	export horizon_dir="/home/deck/horizon-xi"
+	export steam_dir="/home/deck/.local/share/Steam"
 	if [[ $(df -h | grep " /home$" | awk '{print $4}' | sed 's/G//g') -le 60 ]]; then
-		export compat_size=$((cd /home/deck/.local/share/Steam/steamapps && du --max-depth 1 -h) | grep compatdata | awk '{print $1}' | sed 's/G//g')
+		export compat_size=$((cd ${steam_dir}/steamapps && du --max-depth 1 -h) | grep compatdata | awk '{print $1}' | sed 's/G//g')
 		export home_free_space=$(df -h | grep " /home$" | awk '{print $4}' | sed 's/G//g')
 		export card_free_space=$(df -h | grep "/run/media" | awk '{print $4}' | sed 's/G//g')
 		export sd_link="true"
 	fi
-	export config_json=$(sudo find /home/deck/.local/share/Steam/steamapps/compatdata/ -name config.json -type f | grep HorizonXI)
+	export config_json=$(sudo find ${steam_dir}/steamapps/compatdata/ -name config.json -type f | grep HorizonXI)
 	if [[ $(echo $config_json | sed 's/ /\n/g' | wc -l) -gt 1 ]]; then
 		echo "too many installations found. try uninstalling one of them"
 		echo $config_json | sed 's/ /\n/g'
@@ -59,27 +63,26 @@ check(){
 
 add_non_steam_game(){
 
-	app_name="Horizon XI"
 
 	# Source - https://github.com/sonic2kk/steamtinkerlaunch/issues/729
 	# 1 Download the latest release
-	if [[ $( which /home/deck/horizon-xi/stl/sonic2kk-steamtinkerlaunch-e7c5ada/steamtinkerlaunch ) ]]; then
+	if [[ $( which ${horizon_dir}/stl/sonic2kk-steamtinkerlaunch-e7c5ada/steamtinkerlaunch ) ]]; then
 	        echo "Steam tinker launch already installed, continuing..."
 	else
 	        stl_json=$(curl https://api.github.com/repos/sonic2kk/steamtinkerlaunch/releases)
 	        latest_stl_version=$(echo ${stl_json} | jq -r '.[].tag_name' | head -n1)
 	        stl_zip_url=$(echo ${stl_json} | jq -r '.[] | select(.tag_name=="'${latest_stl_version}'") | .zipball_url')
 	        echo "Downloading... ${stl_zip_url}"
-		curl -L --max-redirs 5 --output /home/deck/horizon-xi/stl.zip "${stl_zip_url}"
-		unzip /home/deck/horizon-xi/stl.zip -d /home/deck/horizon-xi/stl
+		curl -L --max-redirs 5 --output ${horizon_dir}/stl.zip "${stl_zip_url}"
+		unzip ${horizon_dir}/stl.zip -d ${horizon_dir}/stl
 	fi
 
 	# 1 Download icon
-	curl -L --max-redirs 5 --output /home/deck/horizon-xi/icon.png "https://raw.githubusercontent.com/trentondyck/horizon_scripts/main/icon.png"
+	curl -L --max-redirs 5 --output ${horizon_dir}/icon.png "${raw_github_url}/icon.png"
 
 	# 2 Add a non-steam game via stl
 	# docs - https://github.com/sonic2kk/steamtinkerlaunch/wiki/Add-Non-Steam-Game
-	/home/deck/horizon-xi/stl/sonic2kk-steamtinkerlaunch-e7c5ada/steamtinkerlaunch addnonsteamgame --appname="${app_name}" --exepath=/home/deck/horizon-xi/lib/net45/HorizonXI-Launcher.exe --startdir=/home/deck/horizon-xi/lib/net45/ --iconpath=/home/deck/horizon-xi/icon.png
+	${horizon_dir}/stl/sonic2kk-steamtinkerlaunch-e7c5ada/steamtinkerlaunch addnonsteamgame --appname="${app_name}" --exepath=${horizon_dir}/lib/net45/HorizonXI-Launcher.exe --startdir=${horizon_dir}/lib/net45/ --iconpath=${horizon_dir}/icon.png
 
 	# 3 Download pip
 	if [[ $(which /home/deck/.local/bin/pip) ]]; then 
@@ -93,8 +96,8 @@ add_non_steam_game(){
 
 	# 6 load the vdf, grab the app_id
 	# Source - https://github.com/DavidoTek/ProtonUp-Qt/issues/175
-	userdata_int=$(ls /home/deck/.local/share/Steam/userdata/)
-	shortcuts_vdf=$(echo /home/deck/.local/share/Steam/userdata/${userdata_int}/config/shortcuts.vdf)
+	userdata_int=$(ls ${steam_dir}/userdata/)
+	shortcuts_vdf=$(echo ${steam_dir}/userdata/${userdata_int}/config/shortcuts.vdf)
 
 	echo "Installing to $shortcuts_vdf"
 	# Documentation - https://github.com/ValvePython/vdf
@@ -102,17 +105,17 @@ add_non_steam_game(){
 	echo "app_id: $app_id"
 
 	# Download assets and place them in steam grid
-	grid_dir=$(echo /home/deck/.local/share/Steam/userdata/${userdata_int}/config/grid)
-	curl -L --max-redirs 5 --output ${grid_dir}/${app_id}_hero.png "https://raw.githubusercontent.com/trentondyck/horizon_scripts/main/appid_hero.png"
-	curl -L --max-redirs 5 --output ${grid_dir}/${app_id}_logo.png "https://raw.githubusercontent.com/trentondyck/horizon_scripts/main/appid_logo.png"
-	curl -L --max-redirs 5 --output ${grid_dir}/${app_id}.png "https://raw.githubusercontent.com/trentondyck/horizon_scripts/main/appid.png"
-	curl -L --max-redirs 5 --output ${grid_dir}/${app_id}p.png "https://raw.githubusercontent.com/trentondyck/horizon_scripts/main/appidp.png"
+	grid_dir=$(echo ${steam_dir}/userdata/${userdata_int}/config/grid)
+	curl -L --max-redirs 5 --output ${grid_dir}/${app_id}_hero.png "${raw_github_url}/appid_hero.png"
+	curl -L --max-redirs 5 --output ${grid_dir}/${app_id}_logo.png "${raw_github_url}/appid_logo.png"
+	curl -L --max-redirs 5 --output ${grid_dir}/${app_id}.png "${raw_github_url}/appid.png"
+	curl -L --max-redirs 5 --output ${grid_dir}/${app_id}p.png "${raw_github_url}/appidp.png"
 
-	config_vdf=/home/deck/.local/share/Steam/config/config.vdf
-	cp -f ${config_vdf} /home/deck/horizon-xi/bak.config_vdf
+	config_vdf=${steam_dir}/config/config.vdf
+	cp -f ${config_vdf} ${horizon_dir}/bak.config_vdf
 	# Documentation - https://github.com/ValvePython/vdf
-	python -c "import vdf; d=vdf.load(open('${config_vdf}')); ctm = d['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping']; ctm['${app_id}']={ 'name': 'GE-Proton7-42', 'config': '', 'priority': '250' }; vdf.dump(d, open('/home/deck/horizon-xi/config.vdf','w'), pretty=True);"
-        cp -f /home/deck/horizon-xi/config.vdf $config_vdf
+	python -c "import vdf; d=vdf.load(open('${config_vdf}')); ctm = d['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping']; ctm['${app_id}']={ 'name': 'GE-Proton7-42', 'config': '', 'priority': '250' }; vdf.dump(d, open('${horizon_dir}/config.vdf','w'), pretty=True);"
+        cp -f ${horizon_dir}/config.vdf $config_vdf
 	# Restart steam
 	killall steam
 	sleep 10
@@ -124,11 +127,11 @@ add_non_steam_game(){
 update(){
 
 	echo "Creating required directories..."
-	mkdir -p /home/deck/horizon-xi
+	mkdir -p ${horizon_dir}
 	echo "Found latest version... $latest_version"
 	echo "Downloading... $download_url"
-	curl -L --max-redirs 5 --output /home/deck/horizon-xi/installer.exe "${download_url}"
-	cd /home/deck/horizon-xi
+	curl -L --max-redirs 5 --output ${horizon_dir}/installer.exe "${download_url}"
+	cd ${horizon_dir}
 	echo "Expanding installers..."
 	7z -y x installer.exe
 	echo "Expanding ${nupkg_name}..."
@@ -142,9 +145,9 @@ update(){
 			proton_json=$(curl https://api.github.com/repos/DavidoTek/ProtonUp-Qt/releases | jq '.')
 			latest_p_version=$(echo ${proton_json} | jq -r '.[].tag_name' | head -n1)
 			proton_qt_release_url=$(echo ${proton_json} | jq -r '.[] | select(.tag_name=="'${latest_p_version}'") | .assets | .[].browser_download_url' | grep -v zsync)
-	                curl -L --max-redirs 5 --output /home/deck/horizon-xi/proton_qt.AppImage "${proton_qt_release_url}"
-			chmod +x /home/deck/horizon-xi/proton_qt.AppImage
-			(/home/deck/horizon-xi/proton_qt.AppImage &>/dev/null) &
+	                curl -L --max-redirs 5 --output ${horizon_dir}/proton_qt.AppImage "${proton_qt_release_url}"
+			chmod +x ${horizon_dir}/proton_qt.AppImage
+			(${horizon_dir}/proton_qt.AppImage &>/dev/null) &
 			# Install GE-Proton
 			echo "Launching ProtonQT..."
 			read -p "Install GE-Proton via ProtonQT, after adding proton, hit enter to continue" </dev/tty
@@ -159,14 +162,14 @@ update(){
 				if [[ ${home_free_space} -le ${compat_size} ]]; then
 					read -p "Theres not enough space to make a backup, continue without backup? (Enter to continue, Ctrl + c to abort)" </dev/tty
 					mkdir -p "/run/media/mmcblk0p1/steamapps/compatdata"
-					cp -r /home/deck/.local/share/Steam/steamapps/compatdata/* /run/media/mmcblk0p1/steamapps/compatdata/
-					cd /home/deck/.local/share/Steam/steamapps
+					cp -r ${steam_dir}/steamapps/compatdata/* /run/media/mmcblk0p1/steamapps/compatdata/
+					cd ${steam_dir}/steamapps
 					ln -s /run/media/mmcblk0p1/steamapps/compatdata
 				else
 					mkdir -p "/run/media/mmcblk0p1/steamapps/compatdata"
-					cp -r /home/deck/.local/share/Steam/steamapps/compatdata/* /run/media/mmcblk0p1/steamapps/compatdata/
-					mv /home/deck/.local/share/Steam/steamapps/compatdata /home/deck/.local/share/Steam/steamapps/compatdata_backup
-					cd /home/deck/.local/share/Steam/steamapps
+					cp -r ${steam_dir}/steamapps/compatdata/* /run/media/mmcblk0p1/steamapps/compatdata/
+					mv ${steam_dir}/steamapps/compatdata ${steam_dir}/steamapps/compatdata_backup
+					cd ${steam_dir}/steamapps
 					ln -s /run/media/mmcblk0p1/steamapps/compatdata
 				fi
 			fi
@@ -202,7 +205,7 @@ END
 
 launch(){
 
-	steam_id=$(grep -sir "Horizon XI" /home/deck/.local/share/Steam/userdata/ | grep -v backup | grep screenshots | awk '{print $2}' | sed 's/"//g')
+	steam_id=$(grep -sir "Horizon XI" ${steam_dir}/userdata/ | grep -v backup | grep screenshots | awk '{print $2}' | sed 's/"//g')
 	if [[ $(ps -ef | grep steam | wc -l) -le 12 ]]; then
 		echo "Steam is not running. Start steam and try again"
 		exit 2
