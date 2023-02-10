@@ -33,9 +33,9 @@ For any update after the first you can copy to your desktop and run it with doub
 
 ### Uninstallation
 
-Beta access: ./uninstall.sh
-
-Please test, and let me know if it works. Try reinstalling with ./update-horizon.sh afterwards to complete the test cycle.
+```
+./uninstall.sh
+```
 
 #### Support
 Send gil to Fatso if you want to support the author
