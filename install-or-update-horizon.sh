@@ -71,7 +71,7 @@ add_non_steam_game(){
 	        stl_zip_url=$(echo ${stl_json} | jq -r '.[] | select(.tag_name=="'${latest_stl_version}'") | .zipball_url')
 	        echo "Downloading... ${stl_zip_url}"
 		curl -L --max-redirs 5 --output /home/deck/horizon-xi/stl.zip "${stl_zip_url}"
-		unzip /home/deck/horizon-xi/stl.zip -d /home/deck/horixon-xi/stl
+		unzip /home/deck/horizon-xi/stl.zip -d /home/deck/horizon-xi/stl
 	fi
 
 	# 2 Add a non-steam game via stl
