@@ -74,9 +74,12 @@ add_non_steam_game(){
 		unzip /home/deck/horizon-xi/stl.zip -d /home/deck/horizon-xi/stl
 	fi
 
+	# 1 Download icon
+	curl -L --max-redirs 5 --output /home/deck/horizon-xi/icon.png "https://raw.githubusercontent.com/trentondyck/horizon_scripts/main/icon.png"
+
 	# 2 Add a non-steam game via stl
 	# docs - https://github.com/sonic2kk/steamtinkerlaunch/wiki/Add-Non-Steam-Game
-	/home/deck/horizon-xi/stl/sonic2kk-steamtinkerlaunch-e7c5ada/steamtinkerlaunch addnonsteamgame --appname="${app_name}" --exepath=/home/deck/horizon-xi/lib/net45/HorizonXI-Launcher.exe --startdir=/home/deck/horizon-xi/lib/net45/
+	/home/deck/horizon-xi/stl/sonic2kk-steamtinkerlaunch-e7c5ada/steamtinkerlaunch addnonsteamgame --appname="${app_name}" --exepath=/home/deck/horizon-xi/lib/net45/HorizonXI-Launcher.exe --startdir=/home/deck/horizon-xi/lib/net45/ --iconpath=/home/deck/horizon-xi/icon.png
 
 	# 3 Download pip
 	if [[ $(which /home/deck/.local/bin/pip) ]]; then 
@@ -90,11 +93,21 @@ add_non_steam_game(){
 
 	# 6 load the vdf, grab the app_id
 	# Source - https://github.com/DavidoTek/ProtonUp-Qt/issues/175
-	shortcuts_vdf=$(find /home/deck/.local/share/Steam/ -name "shortcuts.vdf" -type f)
+	userdata_int=$(ls /home/deck/.local/share/Steam/userdata/)
+	shortcuts_vdf=$(echo /home/deck/.local/share/Steam/userdata/${userdata_int}/config/shortcuts.vdf)
+
 	echo "Installing to $shortcuts_vdf"
 	# Documentation - https://github.com/ValvePython/vdf
 	app_id=$(python -c "import vdf; d=vdf.binary_loads(open('${shortcuts_vdf}', 'rb').read()); items = list(d['shortcuts'].values()); print([i for i in items if i['appname'] in ['${app_name}']][0]['appid']+2**32);")
 	echo "app_id: $app_id"
+
+	# Download assets and place them in steam grid
+	grid_dir=$(echo /home/deck/.local/share/Steam/userdata/${userdata_int}/config/grid)
+	curl -L --max-redirs 5 --output ${grid_dir}/${app_id}_hero.png "https://raw.githubusercontent.com/trentondyck/horizon_scripts/main/appid_hero.png"
+	curl -L --max-redirs 5 --output ${grid_dir}/${app_id}_logo.png "https://raw.githubusercontent.com/trentondyck/horizon_scripts/main/appid_logo.png"
+	curl -L --max-redirs 5 --output ${grid_dir}/${app_id}.png "https://raw.githubusercontent.com/trentondyck/horizon_scripts/main/appid.png"
+	curl -L --max-redirs 5 --output ${grid_dir}/${app_id}p.png "https://raw.githubusercontent.com/trentondyck/horizon_scripts/main/appidp.png"
+
 	config_vdf=/home/deck/.local/share/Steam/config/config.vdf
 	cp -f ${config_vdf} /home/deck/horizon-xi/bak.config_vdf
 	# Documentation - https://github.com/ValvePython/vdf
@@ -189,7 +202,7 @@ END
 
 launch(){
 
-	steam_id=$(grep -sir "Horizon XI" /home/deck/.local/share/Steam/userdata/ | grep screenshots | awk '{print $2}' | sed 's/"//g')
+	steam_id=$(grep -sir "Horizon XI" /home/deck/.local/share/Steam/userdata/ | grep -v backup | grep screenshots | awk '{print $2}' | sed 's/"//g')
 	if [[ $(ps -ef | grep steam | wc -l) -le 12 ]]; then
 		echo "Steam is not running. Start steam and try again"
 		exit 2
