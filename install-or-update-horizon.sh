@@ -96,6 +96,7 @@ add_non_steam_game(){
 	app_id=$(python -c "import vdf; d=vdf.binary_loads(open('${shortcuts_vdf}', 'rb').read()); items = list(d['shortcuts'].values()); print([i for i in items if i['appname'] in ['${app_name}']][0]['appid']+2**32);")
 	echo "app_id: $app_id"
 	config_vdf=/home/deck/.local/share/Steam/config/config.vdf
+	cp -f ${config_vdf} /home/deck/horizon-xi/bak.config_vdf
 	# Documentation - https://github.com/ValvePython/vdf
 	python -c "import vdf; d=vdf.load(open('${config_vdf}')); ctm = d['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping']; ctm['${app_id}']={ 'name': 'GE-Proton7-42', 'config': '', 'priority': '250' }; vdf.dump(d, open('/home/deck/horizon-xi/config.vdf','w'), pretty=True);"
         cp -f /home/deck/horizon-xi/config.vdf $config_vdf
