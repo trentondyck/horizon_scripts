@@ -146,11 +146,17 @@ END
 
 
         cp -f ${horizon_dir}/config.vdf $config_vdf
-	# Restart steam
-	killall steam
-	sleep 10
-	(steam &>/dev/null) &
+	restart_steam
 	echo "Successfully added nonsteam game"
+
+}
+
+restart_steam(){
+
+        # Restart steam
+        killall steam
+        sleep 10
+        (steam &>/dev/null) &
 
 }
 
@@ -171,16 +177,11 @@ update(){
 			echo "Steam is not running, manually start steam and add the game as per the instructions above"
 			exit 2
 		else
-			# Install ProtonQT
-			proton_json=$(curl https://api.github.com/repos/DavidoTek/ProtonUp-Qt/releases | jq '.')
-			latest_p_version=$(echo ${proton_json} | jq -r '.[].tag_name' | head -n1)
-			proton_qt_release_url=$(echo ${proton_json} | jq -r '.[] | select(.tag_name=="'${latest_p_version}'") | .assets | .[].browser_download_url' | grep -v zsync)
-	                curl -L --max-redirs 5 --output ${horizon_dir}/proton_qt.AppImage "${proton_qt_release_url}"
-			chmod +x ${horizon_dir}/proton_qt.AppImage
-			(${horizon_dir}/proton_qt.AppImage &>/dev/null) &
-			# Install GE-Proton
-			echo "Launching ProtonQT..."
-			read -p "Install GE-Proton via ProtonQT, after adding proton, hit enter to continue" </dev/tty
+			# Install GE-Proton7-42, known to work with Horizon. Later versions can be found via `/home/deck/.local/bin/protonup --releases`
+			/home/deck/.local/bin/pip install protonup
+			echo "Downloading GE-Proton7-42, this may take a while..."
+			/home/deck/.local/bin/protonup -t GE-Proton7-42 -y
+			restart_steam
 			add_non_steam_game
 			# Low disk space version
 			if [[ "${sd_link}" == "true" ]]; then
