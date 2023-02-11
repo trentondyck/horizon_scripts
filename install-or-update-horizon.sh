@@ -133,6 +133,7 @@ END
 
 	# Download assets and place them in steam grid
 	grid_dir=$(echo ${steam_dir}/userdata/${userdata_int}/config/grid)
+	mkdir -p ${grid_dir}
 	curl -L --max-redirs 5 --output ${grid_dir}/${app_id}_hero.png "${raw_github_url}/appid_hero.png"
 	curl -L --max-redirs 5 --output ${grid_dir}/${app_id}_logo.png "${raw_github_url}/appid_logo.png"
 	curl -L --max-redirs 5 --output ${grid_dir}/${app_id}.png "${raw_github_url}/appid.png"
@@ -204,16 +205,18 @@ update(){
 			fi
 
 			# Unsure about spacing, anyways hoping this allows the user to not have to set the install directory
-python << END
-import json
 
-f = open('${storage_json}')
-data = json.load(f)
-data['paths']['installPath']['path']='C:\\Program Files\\HorizonXI\\Game'
-with open("${storage_json}", "w") as outfile:
-  json.dump(data, outfile, indent=4)
-
-END
+			# This doesnt work for now. the file doesnt exist before launching horizon.
+#python << END
+#import json
+#
+#f = open('${storage_json}')
+#data = json.load(f)
+#data['paths']['installPath']['path']='C:\\Program Files\\HorizonXI\\Game'
+#with open("${storage_json}", "w") as outfile:
+#  json.dump(data, outfile, indent=4)
+#
+#END
 
 			# I'll leave this help text until the above is tested/verified
 			echo "You should pick C:\\Program Files when prompted for an install path."
