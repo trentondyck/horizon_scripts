@@ -2,15 +2,19 @@
 
 init(){
 
-	if [[ $(sudo find /run/media/mmcblk0p1/steamapps/compatdata/ -name config.json -type f | grep HorizonXI) ]]; then
-		echo "Media based install"
-		export config_json=$(sudo find /run/media/mmcblk0p1/steamapps/compatdata/ -name config.json -type f | grep HorizonXI)
-	elif [[ $(sudo find /home/deck/.local/share/Steam/steamapps/compatdata/ -name config.json -type f | grep HorizonXI) ]]; then
-		echo "Deck based install"
-		export config_json=$(sudo find /home/deck/.local/share/Steam/steamapps/compatdata/ -name config.json -type f | grep HorizonXI)
+	if [[ -d /run/media/mmcblk0p1/steamapps/compatdata/ ]]; then
+		if [[ $(sudo find /run/media/mmcblk0p1/steamapps/compatdata/ -name config.json -type f | grep HorizonXI) ]]; then
+			echo "Media based install"
+			export config_json=$(sudo find /run/media/mmcblk0p1/steamapps/compatdata/ -name config.json -type f | grep HorizonXI)
+		fi
 	else
-		echo "No horizon XI install found, exiting..."
-		exit 2
+		if [[ $(sudo find /home/deck/.local/share/Steam/steamapps/compatdata/ -name config.json -type f | grep HorizonXI) ]]; then
+			echo "Deck based install"
+			export config_json=$(sudo find /home/deck/.local/share/Steam/steamapps/compatdata/ -name config.json -type f | grep HorizonXI)
+		else
+			echo "No horizon XI install found, exiting..."
+			exit 2
+		fi
 	fi
 	export horizon_directory=$(echo $config_json | sed 's/pfx.*$//g')
 	export steam_id=$(grep -sir "Horizon XI" /home/deck/.local/share/Steam/userdata/ | grep screenshots | awk '{print $2}' | sed 's/"//g')
