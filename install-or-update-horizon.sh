@@ -134,10 +134,10 @@ END
 	# Download assets and place them in steam grid
 	grid_dir=$(echo ${steam_dir}/userdata/${userdata_int}/config/grid)
 	mkdir -p ${grid_dir}
-	curl -L --max-redirs 5 --output ${grid_dir}/${app_id}_hero.png "${raw_github_url}/appid_hero.png"
-	curl -L --max-redirs 5 --output ${grid_dir}/${app_id}_logo.png "${raw_github_url}/appid_logo.png"
-	curl -L --max-redirs 5 --output ${grid_dir}/${app_id}.png "${raw_github_url}/appid.png"
-	curl -L --max-redirs 5 --output ${grid_dir}/${app_id}p.png "${raw_github_url}/appidp.png"
+	curl -L --max-redirs 5 --output "${grid_dir}/${app_id}_hero.png" "${raw_github_url}/appid_hero.png"
+	curl -L --max-redirs 5 --output "${grid_dir}/${app_id}_logo.png" "${raw_github_url}/appid_logo.png"
+	curl -L --max-redirs 5 --output "${grid_dir}/${app_id}.png" "${raw_github_url}/appid.png"
+	curl -L --max-redirs 5 --output "${grid_dir}/${app_id}p.png" "${raw_github_url}/appidp.png"
 
 	config_vdf=${steam_dir}/config/config.vdf
 	cp -f ${config_vdf} ${horizon_dir}/bak.config_vdf
