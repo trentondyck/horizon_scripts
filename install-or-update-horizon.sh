@@ -101,7 +101,34 @@ add_non_steam_game(){
 
 	echo "Installing to $shortcuts_vdf"
 	# Documentation - https://github.com/ValvePython/vdf
-	app_id=$(python -c "import vdf; d=vdf.binary_loads(open('${shortcuts_vdf}', 'rb').read()); items = list(d['shortcuts'].values()); print([i for i in items if i['appname'] in ['${app_name}']][0]['appid']+2**32);")
+	# app_id=$(python -c "import vdf; d=vdf.binary_loads(open('${shortcuts_vdf}', 'rb').read()); items = list(d['shortcuts'].values()); print([i for i in items if i['appname'] in ['${app_name}']][0]['appid']+2**32);")
+
+app_id=$(
+python << END
+
+import vdf
+d=vdf.binary_loads(open('${shortcuts_vdf}', 'rb').read());
+items = list(d['shortcuts'].values());
+data = items
+
+def get_appid(appname):
+    for item in data:
+        if item.get("AppName") == appname or item.get("appname") == appname:
+            return item.get("appid")
+
+appname = "Horizon XI"
+appid = get_appid(appname)
+
+#if appid:
+#    print(f"The appid for the app named {appname} is: {appid}")
+#else:
+#    print(f"No app found with name {appname}")
+
+print(appid+2**32)
+
+END
+)
+
 	echo "app_id: $app_id"
 
 	# Download assets and place them in steam grid
@@ -115,6 +142,8 @@ add_non_steam_game(){
 	cp -f ${config_vdf} ${horizon_dir}/bak.config_vdf
 	# Documentation - https://github.com/ValvePython/vdf
 	python -c "import vdf; d=vdf.load(open('${config_vdf}')); ctm = d['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping']; ctm['${app_id}']={ 'name': 'GE-Proton7-42', 'config': '', 'priority': '250' }; vdf.dump(d, open('${horizon_dir}/config.vdf','w'), pretty=True);"
+
+
         cp -f ${horizon_dir}/config.vdf $config_vdf
 	# Restart steam
 	killall steam
