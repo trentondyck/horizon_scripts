@@ -22,6 +22,13 @@ init(){
 	fi
 	export config_prefix=$(echo $config_json | sed 's/\/config.json$//g')
 	export storage_json=$(echo ${config_prefix}/storage.json)
+	if [[ -f ${storage_json} ]]; then
+                echo "Found storage json";
+        else
+                echo "Downloading storage json"
+                mkdir -p ${config_prefix}
+                curl -L --max-redirs 5 --output "${storage_json}" "${raw_github_url}/storage.json"
+        fi
 	export base_downloaded_boolean=$(cat $storage_json | jq '.GAME_UPDATER.baseGame.downloaded')
 	export base_extracted_boolean=$(cat $storage_json | jq '.GAME_UPDATER.baseGame.extracted')
 	export updater_downloaded_boolean=$(cat $storage_json | jq '.GAME_UPDATER.updater.downloaded')
@@ -40,6 +47,13 @@ init(){
 	fi
 	export download_url=$(echo ${horizon_json} | jq -r '.[] | select(.tag_name=="'${latest_version}'") | .assets[] | select ( .name | endswith ("exe") ) | .browser_download_url')
 	export nupkg_name=$(echo ${horizon_json} | jq -r '.[] | select(.tag_name=="'${latest_version}'") | .assets[] | select ( .name | endswith ("nupkg") ) | .name ')
+	# 3 Download pip
+	if [[ $(which /home/deck/.local/bin/pip) ]]; then
+	        echo "pip already installed. Carrying on...";
+	else
+	        wget https://bootstrap.pypa.io/get-pip.py
+	        python get-pip.py --user
+	fi
 	echo "storage_json: $storage_json"
 	echo "latest_version: $latest_version"
 	echo "current_version: $current_version"
@@ -84,13 +98,6 @@ add_non_steam_game(){
 	# docs - https://github.com/sonic2kk/steamtinkerlaunch/wiki/Add-Non-Steam-Game
 	${horizon_dir}/stl/sonic2kk-steamtinkerlaunch-e7c5ada/steamtinkerlaunch addnonsteamgame --appname="${app_name}" --exepath=${horizon_dir}/lib/net45/HorizonXI-Launcher.exe --startdir=${horizon_dir}/lib/net45/ --iconpath=${horizon_dir}/icon.png
 
-	# 3 Download pip
-	if [[ $(which /home/deck/.local/bin/pip) ]]; then 
-	        echo "pip already installed. Carrying on...";
-	else 
-	        wget https://bootstrap.pypa.io/get-pip.py
-	        python get-pip.py --user
-	fi
 	# 4 install vdf module
 	/home/deck/.local/bin/pip install vdf
 
@@ -174,8 +181,7 @@ update(){
 	7z -y x ${nupkg_name}
 	if [[ ${latest_version} == "v1.0.1" ]]; then
 		if [[ $(ps -ef | grep steam | wc -l) -le 12 ]]; then
-			echo "Steam is not running, manually start steam and add the game as per the instructions above"
-			exit 2
+			restart_steam
 		else
 			# Install GE-Proton7-42, known to work with Horizon. Later versions can be found via `/home/deck/.local/bin/protonup --releases`
 			/home/deck/.local/bin/pip install protonup
