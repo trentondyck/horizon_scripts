@@ -20,8 +20,8 @@ init(){
 		echo $config_json | sed 's/ /\n/g'
 		exit 2
 	fi
-	export config_prefix=$(echo $config_json | sed 's/config.json$//g')
-	export storage_json=$(echo ${config_prefix}storage.json)
+	export config_prefix=$(echo $config_json | sed 's/\/config.json$//g')
+	export storage_json=$(echo ${config_prefix}/storage.json)
 	export base_downloaded_boolean=$(cat $storage_json | jq '.GAME_UPDATER.baseGame.downloaded')
 	export base_extracted_boolean=$(cat $storage_json | jq '.GAME_UPDATER.baseGame.extracted')
 	export updater_downloaded_boolean=$(cat $storage_json | jq '.GAME_UPDATER.updater.downloaded')
@@ -207,18 +207,6 @@ update(){
 
 			# Unsure about spacing, anyways hoping this allows the user to not have to set the install directory
 
-			# This doesnt work for now. the file doesnt exist before launching horizon.
-#python << END
-#import json
-#
-#f = open('${storage_json}')
-#data = json.load(f)
-#data['paths']['installPath']['path']='C:\\Program Files\\HorizonXI\\Game'
-#with open("${storage_json}", "w") as outfile:
-#  json.dump(data, outfile, indent=4)
-#
-#END
-
 			# I'll leave this help text until the above is tested/verified
 			echo "You should pick C:\\Program Files when prompted for an install path."
 			echo "You should not pick anything else. You can move compatdata to an SD card later if needed."
@@ -227,6 +215,12 @@ update(){
 			echo "Sometimes you may have to launch the game multiple times initially to get it working"
 			echo "After the game launches, complete the download before running update-horizon.sh again"
 			echo "If the launcher is stuck 'verifying game files', or it opens and minimizes/exits immediately, try downloading in game mode"
+
+			# If this works, we can remove the echo statements above.
+			echo "Installing storage json manually, hopefully this removes install dir choice from the user"
+			mkdir -p ${config_prefix}
+			curl -L --max-redirs 5 --output "${storage_json}" "${raw_github_url}/storage.json"
+
 		fi
 	else
 		# Latest version is not v1.0.1
@@ -240,8 +234,8 @@ launch(){
 
 	steam_id=$(grep -sir "Horizon XI" ${steam_dir}/userdata/ | grep -v backup | grep screenshots | awk '{print $2}' | sed 's/"//g')
 	if [[ $(ps -ef | grep steam | wc -l) -le 12 ]]; then
-		echo "Steam is not running. Start steam and try again"
-		exit 2
+		restart_steam
+        	steam steam://rungameid/${steam_id}
 	else
         	steam steam://rungameid/${steam_id}
 	fi
