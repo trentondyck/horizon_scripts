@@ -26,9 +26,15 @@ init(){
 	if [[ -f ${storage_json} ]]; then
                 echo "Found storage json";
         else
-                echo "Downloading storage json to ${config_prefix}"
-                mkdir -p "${config_prefix}"
-                curl -L --max-redirs 5 --output "${storage_json}" "${raw_github_url}/storage.json"
+		if [[ -f ${config_json} ]]; then
+                	echo "Downloading storage json to ${config_prefix}"
+                	mkdir -p "${config_prefix}"
+                	curl -L --max-redirs 5 --output "${storage_json}" "${raw_github_url}/storage.json"
+		else
+                	echo "Downloading storage json to ${horizon_dir}"
+                	mkdir -p "${horizon_dir}"
+                	curl -L --max-redirs 5 --output "horizon_dir/storage.json" "${raw_github_url}/storage.json"
+		fi
         fi
 	export base_downloaded_boolean=$((cat $storage_json | jq '.GAME_UPDATER.baseGame.downloaded' || echo false))
 	export base_extracted_boolean=$((cat $storage_json | jq '.GAME_UPDATER.baseGame.extracted' || echo false))
@@ -261,6 +267,9 @@ update(){
 			steam_id=$(grep -sir "Horizon XI" ${steam_dir}/userdata/ | grep -v backup | grep screenshots | awk '{print $2}' | sed 's/"//g')
         		steam steam://rungameid/${steam_id}
 			sleep 10
+			config_json=$(sudo find ${steam_dir}/steamapps/compatdata/ -name config.json -type f | grep HorizonXI)
+			config_prefix=$(echo $config_json | sed 's/\/config.json//g')
+			storage_json=$(echo ${config_prefix}/storage.json)
 			mkdir -p ${config_prefix}
 			if [[ -f ${storage_json} ]]; then
 				echo "Found existing storage json"
