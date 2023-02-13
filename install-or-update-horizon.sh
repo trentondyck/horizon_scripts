@@ -21,7 +21,7 @@ init(){
 		echo $config_json | sed 's/ /\n/g'
 		exit 2
 	fi
-	export config_prefix="${steam_dir}/steamapps/compatdata/"
+	export config_prefix=$(echo $config_json | sed 's/\/config.json//g')
 	export storage_json=$(echo ${config_prefix}/storage.json)
 	if [[ -f ${storage_json} ]]; then
                 echo "Found storage json";
@@ -30,10 +30,10 @@ init(){
                 mkdir -p "${config_prefix}"
                 curl -L --max-redirs 5 --output "${storage_json}" "${raw_github_url}/storage.json"
         fi
-	export base_downloaded_boolean=$(cat $storage_json | jq '.GAME_UPDATER.baseGame.downloaded')
-	export base_extracted_boolean=$(cat $storage_json | jq '.GAME_UPDATER.baseGame.extracted')
-	export updater_downloaded_boolean=$(cat $storage_json | jq '.GAME_UPDATER.updater.downloaded')
-	export updater_extracted_boolean=$(cat $storage_json | jq '.GAME_UPDATER.updater.extracted')
+	export base_downloaded_boolean=$((cat $storage_json | jq '.GAME_UPDATER.baseGame.downloaded' || echo false))
+	export base_extracted_boolean=$((cat $storage_json | jq '.GAME_UPDATER.baseGame.extracted' || echo false))
+	export updater_downloaded_boolean=$((cat $storage_json | jq '.GAME_UPDATER.updater.downloaded' || echo false))
+	export updater_extracted_boolean=$((cat $storage_json | jq '.GAME_UPDATER.updater.extracted' || echo false))
 	export horizon_json=$(curl https://api.github.com/repos/HorizonFFXI/HorizonXI-Launcher-Binaries/releases | jq '.')
 	if [[ ${base_downloaded_boolean} == "true" && ${base_extracted_boolean} == "true" && ${updater_downloaded_boolean} == "true" && ${updater_extracted_boolean} == "true" ]]; then
 		export latest_version=$(echo ${horizon_json} | jq -r '.[].name' | head -n1)
