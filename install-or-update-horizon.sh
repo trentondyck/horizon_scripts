@@ -258,6 +258,9 @@ update(){
 			echo "If the launcher is stuck 'verifying game files', or it opens and minimizes/exits immediately, try downloading in game mode"
 
 			echo "Installing storage json manually, hopefully this removes install dir choice from the user"
+			steam_id=$(grep -sir "Horizon XI" ${steam_dir}/userdata/ | grep -v backup | grep screenshots | awk '{print $2}' | sed 's/"//g')
+        		steam steam://rungameid/${steam_id}
+			sleep 10
 			mkdir -p ${config_prefix}
 			if [[ -f ${storage_json} ]]; then
 				echo "Found existing storage json"
