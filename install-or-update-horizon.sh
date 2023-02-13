@@ -21,13 +21,13 @@ init(){
 		echo $config_json | sed 's/ /\n/g'
 		exit 2
 	fi
-	export config_prefix=$(echo $config_json | sed 's/\/config.json$//g')
+	export config_prefix="${steam_dir}/steamapps/compatdata/"
 	export storage_json=$(echo ${config_prefix}/storage.json)
 	if [[ -f ${storage_json} ]]; then
                 echo "Found storage json";
         else
-                echo "Downloading storage json"
-                mkdir -p ${config_prefix}
+                echo "Downloading storage json to ${config_prefix}"
+                mkdir -p "${config_prefix}"
                 curl -L --max-redirs 5 --output "${storage_json}" "${raw_github_url}/storage.json"
         fi
 	export base_downloaded_boolean=$(cat $storage_json | jq '.GAME_UPDATER.baseGame.downloaded')
