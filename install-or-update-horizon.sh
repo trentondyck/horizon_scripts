@@ -33,7 +33,7 @@ init(){
 		else
                 	echo "Downloading storage json to ${horizon_dir}"
                 	mkdir -p "${horizon_dir}"
-                	curl -L --max-redirs 5 --output "horizon_dir/storage.json" "${raw_github_url}/storage.json"
+                	curl -L --max-redirs 5 --output "${horizon_dir}/storage.json" "${raw_github_url}/storage.json"
 		fi
         fi
 	export base_downloaded_boolean=$((cat $storage_json | jq '.GAME_UPDATER.baseGame.downloaded' || echo false))
