@@ -4,6 +4,15 @@
         export raw_github_url="https://raw.githubusercontent.com/trentondyck/horizon_scripts/main"
         userdata_int=$(ls ${steam_dir}/userdata/)
         shortcuts_vdf=$(echo ${steam_dir}/userdata/${userdata_int}/config/shortcuts.vdf)
+	if [[ $(which /home/deck/.local/bin/pip) ]]; then
+	        echo "pip already installed. Carrying on...";
+	else
+	        wget https://bootstrap.pypa.io/get-pip.py
+	        python get-pip.py --user
+	fi
+	/home/deck/.local/bin/pip install vdf
+	echo "storage_json: $storage_json"
+	echo "latest_version: $latest_version"
 
 app_id=$(
 python << END
