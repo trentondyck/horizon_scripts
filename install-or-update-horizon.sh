@@ -8,7 +8,7 @@ init(){
 	export sd_link="false"
 	export horizon_dir="/home/deck/horizon-xi"
 	export steam_dir="/home/deck/.local/share/Steam"
-	if [[ $(df -h | grep " /home$" | awk '{print $4}' | sed 's/G//g') -le 60 ]]; then
+	if [[ $(df -k | grep " /home$" | awk '{print $4}') -le 66124876 ]]; then
 		export compat_size=$((cd ${steam_dir}/steamapps && du --max-depth 1 -h) | grep compatdata | awk '{print $1}' | sed 's/G//g')
 		export home_free_space=$(df -h | grep " /home$" | awk '{print $4}' | sed 's/G//g')
 		export card_free_space=$(df -h | grep "/run/media" | awk '{print $4}' | sed 's/G//g')
