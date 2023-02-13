@@ -45,6 +45,10 @@ init(){
 		# Let's hard code latest version to v1.0.1, since the installer isn't complete we need to download & complete the install on v1.0.1 before updating
 		# See Note: https://github.com/hilts-vaughan/hilts-vaughan.github.io/blob/master/_posts/2022-12-16-installing-horizon-xi-linux.md#install-horizonxi---steam-play-steam-deck--other-systems
 		export latest_version="v1.0.1"
+
+		echo "Installing storage json manually, hopefully this removes install dir choice from the user"
+		mkdir -p ${config_prefix}
+		curl -L --max-redirs 5 --output "${storage_json}" "${raw_github_url}/storage.json"
 	fi
 	export download_url=$(echo ${horizon_json} | jq -r '.[] | select(.tag_name=="'${latest_version}'") | .assets[] | select ( .name | endswith ("exe") ) | .browser_download_url')
 	export nupkg_name=$(echo ${horizon_json} | jq -r '.[] | select(.tag_name=="'${latest_version}'") | .assets[] | select ( .name | endswith ("nupkg") ) | .name ')
@@ -247,12 +251,6 @@ update(){
 			echo "Sometimes you may have to launch the game multiple times initially to get it working"
 			echo "After the game launches, complete the download before running update-horizon.sh again"
 			echo "If the launcher is stuck 'verifying game files', or it opens and minimizes/exits immediately, try downloading in game mode"
-
-			# If this works, we can remove the echo statements above.
-			echo "Installing storage json manually, hopefully this removes install dir choice from the user"
-			mkdir -p ${config_prefix}
-			curl -L --max-redirs 5 --output "${storage_json}" "${raw_github_url}/storage.json"
-
 		fi
 	else
 		# Latest version is not v1.0.1
