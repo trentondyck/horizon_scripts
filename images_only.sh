@@ -1,25 +1,22 @@
 #!/bin/bash
 set -e
 
-echo 0
-        export steam_dir="/home/deck/.local/share/Steam"
-        export raw_github_url="https://raw.githubusercontent.com/trentondyck/horizon_scripts/main"
-	# Multi-user support for shortcuts vdf:
-	echo 1
-        shortcuts_vdf=$(grep -ir "Horizon XI" /home/deck/.local/share/Steam/userdata/ 2>&1 | grep "shortcuts.vdf" | awk '{print $2}' | sed 's/://g')
-	if [[ $(which /home/deck/.local/bin/pip) ]]; then
-	        echo "pip already installed. Carrying on...";
-	else
-	        wget https://bootstrap.pypa.io/get-pip.py
-	        python get-pip.py --user
-	fi
-	echo 2
-	/home/deck/.local/bin/pip install vdf
+export steam_dir="/home/deck/.local/share/Steam"
+export raw_github_url="https://raw.githubusercontent.com/trentondyck/horizon_scripts/main"
+# Multi-user support for shortcuts vdf:
+shortcuts_vdf=$(grep -ir "Horizon XI" /home/deck/.local/share/Steam/userdata/ 2>&1 | grep "shortcuts.vdf" | awk '{print $2}' | sed 's/://g')
+if [[ $(which /home/deck/.local/bin/pip) ]]; then
+        echo "pip already installed. Carrying on...";
+else
+        wget https://bootstrap.pypa.io/get-pip.py
+        python get-pip.py --user
+fi
+/home/deck/.local/bin/pip install vdf
 
-        for sv in ${shortcuts_vdf}; do
+for sv in ${shortcuts_vdf}; do
 
-                userdata_int=$(echo $sv | sed 's/.*userdata\///g' | sed 's/\/config.*$//g')
-                echo "Installing to $sv for $userdata_int"
+	userdata_int=$(echo $sv | sed 's/.*userdata\///g' | sed 's/\/config.*$//g')
+	echo "Installing to $sv for $userdata_int"
 
 app_id=$(
 python << END
@@ -47,17 +44,17 @@ print(appid+2**32)
 END
 )
 
-	        echo "app_id: $app_id"
+	echo "app_id: $app_id"
 
-	        # Download assets and place them in steam grid
-	        grid_dir=$(echo ${steam_dir}/userdata/${userdata_int}/config/grid)
-	        mkdir -p ${grid_dir}
-		echo "Downloading: ${raw_github_url}/appid_hero.png to ${grid_dir}/${app_id}_hero.png"
-	        curl -L --max-redirs 5 --output "${grid_dir}/${app_id}_hero.png" "${raw_github_url}/appid_hero.png"
-	        curl -L --max-redirs 5 --output "${grid_dir}/${app_id}_logo.png" "${raw_github_url}/appid_logo.png"
-	        curl -L --max-redirs 5 --output "${grid_dir}/${app_id}.png" "${raw_github_url}/appid.png"
-	        curl -L --max-redirs 5 --output "${grid_dir}/${app_id}p.png" "${raw_github_url}/appidp.png"
+	# Download assets and place them in steam grid
+	grid_dir=$(echo ${steam_dir}/userdata/${userdata_int}/config/grid)
+	mkdir -p ${grid_dir}
+	echo "Downloading: ${raw_github_url}/appid_hero.png to ${grid_dir}/${app_id}_hero.png"
+	curl -L --max-redirs 5 --output "${grid_dir}/${app_id}_hero.png" "${raw_github_url}/appid_hero.png"
+	curl -L --max-redirs 5 --output "${grid_dir}/${app_id}_logo.png" "${raw_github_url}/appid_logo.png"
+	curl -L --max-redirs 5 --output "${grid_dir}/${app_id}.png" "${raw_github_url}/appid.png"
+	curl -L --max-redirs 5 --output "${grid_dir}/${app_id}p.png" "${raw_github_url}/appidp.png"
 
-	done
+done
 
-	echo "Finished installing images"
+echo "Finished installing images"
