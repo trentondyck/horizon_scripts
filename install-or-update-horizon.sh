@@ -3,6 +3,7 @@ set -e
 
 init(){
 
+	export initial_install="false"
 	export app_name="Horizon XI"
 	export raw_github_url="https://raw.githubusercontent.com/trentondyck/horizon_scripts/main"
 	export sd_link="false"
@@ -265,6 +266,7 @@ update(){
 
 			echo "Installing storage json manually, hopefully this removes install dir choice from the user"
 			steam_id=$(grep -sir "Horizon XI" ${steam_dir}/userdata/ | grep -v backup | grep screenshots | awk '{print $2}' | sed 's/"//g')
+			export initial_install="true"
         		steam steam://rungameid/${steam_id}
 			sleep 10
 			config_json=$(sudo find ${steam_dir}/steamapps/compatdata/ -name config.json -type f | grep HorizonXI)
@@ -288,12 +290,14 @@ update(){
 
 launch(){
 
-	steam_id=$(grep -sir "Horizon XI" ${steam_dir}/userdata/ | grep -v backup | grep screenshots | awk '{print $2}' | sed 's/"//g')
-	if [[ $(ps -ef | grep steam | wc -l) -le 12 ]]; then
-		restart_steam
-        	steam steam://rungameid/${steam_id}
-	else
-        	steam steam://rungameid/${steam_id}
+	if [[ ${initial_install} == "false" ]]; then
+		steam_id=$(grep -sir "Horizon XI" ${steam_dir}/userdata/ | grep -v backup | grep screenshots | awk '{print $2}' | sed 's/"//g')
+		if [[ $(ps -ef | grep steam | wc -l) -le 12 ]]; then
+			restart_steam
+			steam steam://rungameid/${steam_id}
+		else
+			steam steam://rungameid/${steam_id}
+		fi
 	fi
 }
 
