@@ -161,7 +161,22 @@ END
 	config_vdf=${steam_dir}/config/config.vdf
 	cp -f ${config_vdf} ${horizon_dir}/bak.config_vdf
 	# Documentation - https://github.com/ValvePython/vdf
-	python -c "import vdf; d=vdf.load(open('${config_vdf}')); ctm = d['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping']; ctm['${app_id}']={ 'name': 'GE-Proton7-42', 'config': '', 'priority': '250' }; vdf.dump(d, open('${horizon_dir}/config.vdf','w'), pretty=True);"
+	echo "Installing Proton layer to ${config_vdf}"
+
+python << END
+
+import vdf
+d=vdf.load(open('${config_vdf}'))
+
+if not 'CompatToolMapping' in d['InstallConfigStore']['Software']['Valve']['Steam']:
+  d['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping']={}
+
+ctm = d['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping']
+ctm['${app_id}']={ 'name': 'GE-Proton7-42', 'config': '', 'priority': '250' }
+vdf.dump(d, open('${horizon_dir}/config.vdf','w'), pretty=True)
+
+END
+
 	cp -f ${horizon_dir}/config.vdf $config_vdf
 
 	restart_steam
