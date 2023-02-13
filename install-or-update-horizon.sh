@@ -45,10 +45,6 @@ init(){
 		# Let's hard code latest version to v1.0.1, since the installer isn't complete we need to download & complete the install on v1.0.1 before updating
 		# See Note: https://github.com/hilts-vaughan/hilts-vaughan.github.io/blob/master/_posts/2022-12-16-installing-horizon-xi-linux.md#install-horizonxi---steam-play-steam-deck--other-systems
 		export latest_version="v1.0.1"
-
-		echo "Installing storage json manually, hopefully this removes install dir choice from the user"
-		mkdir -p ${config_prefix}
-		curl -L --max-redirs 5 --output "${storage_json}" "${raw_github_url}/storage.json"
 	fi
 	export download_url=$(echo ${horizon_json} | jq -r '.[] | select(.tag_name=="'${latest_version}'") | .assets[] | select ( .name | endswith ("exe") ) | .browser_download_url')
 	export nupkg_name=$(echo ${horizon_json} | jq -r '.[] | select(.tag_name=="'${latest_version}'") | .assets[] | select ( .name | endswith ("nupkg") ) | .name ')
@@ -226,18 +222,27 @@ update(){
 					echo "There's not enough space on the memory card either. aborting installation"
 					exit 2
 				fi
+				my_link="/home/deck/.local/share/Steam/steamapps/compatdata"
 				if [[ ${home_free_space} -le ${compat_size} ]]; then
 					read -p "Theres not enough space to make a backup, continue without backup? (Enter to continue, Ctrl + c to abort)" </dev/tty
-					mkdir -p "/run/media/mmcblk0p1/steamapps/compatdata"
-					cp -r ${steam_dir}/steamapps/compatdata/* /run/media/mmcblk0p1/steamapps/compatdata/
-					cd ${steam_dir}/steamapps
-					ln -s /run/media/mmcblk0p1/steamapps/compatdata
+					if [[ -L ${my_link} ]] && [[ -e ${my_link} ]]; then
+						echo "Found simlink, nothing further to do here"
+					else
+						mkdir -p "/run/media/mmcblk0p1/steamapps/compatdata"
+						cp -r ${steam_dir}/steamapps/compatdata/* /run/media/mmcblk0p1/steamapps/compatdata/
+						cd ${steam_dir}/steamapps
+						ln -s /run/media/mmcblk0p1/steamapps/compatdata
+					fi
 				else
-					mkdir -p "/run/media/mmcblk0p1/steamapps/compatdata"
-					cp -r ${steam_dir}/steamapps/compatdata/* /run/media/mmcblk0p1/steamapps/compatdata/
-					mv ${steam_dir}/steamapps/compatdata ${steam_dir}/steamapps/compatdata_backup
-					cd ${steam_dir}/steamapps
-					ln -s /run/media/mmcblk0p1/steamapps/compatdata
+					if [[ -L ${my_link} ]] && [[ -e ${my_link} ]]; then
+						echo "Found simlink, nothing further to do here"
+					else
+						mkdir -p "/run/media/mmcblk0p1/steamapps/compatdata"
+						cp -r ${steam_dir}/steamapps/compatdata/* /run/media/mmcblk0p1/steamapps/compatdata/
+						mv ${steam_dir}/steamapps/compatdata ${steam_dir}/steamapps/compatdata_backup
+						cd ${steam_dir}/steamapps
+						ln -s /run/media/mmcblk0p1/steamapps/compatdata
+					fi
 				fi
 			fi
 
@@ -251,6 +256,15 @@ update(){
 			echo "Sometimes you may have to launch the game multiple times initially to get it working"
 			echo "After the game launches, complete the download before running update-horizon.sh again"
 			echo "If the launcher is stuck 'verifying game files', or it opens and minimizes/exits immediately, try downloading in game mode"
+
+			echo "Installing storage json manually, hopefully this removes install dir choice from the user"
+			mkdir -p ${config_prefix}
+			if [[ -f ${storage_json} ]]; then
+				echo "Found existing storage json"
+			else
+				echo "Downloading new storage json"
+				curl -L --max-redirs 5 --output "${storage_json}" "${raw_github_url}/storage.json"
+			fi
 		fi
 	else
 		# Latest version is not v1.0.1
