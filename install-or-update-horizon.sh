@@ -36,10 +36,10 @@ init(){
                 	curl -L --max-redirs 5 --output "${horizon_dir}/storage.json" "${raw_github_url}/storage.json"
 		fi
         fi
-	export base_downloaded_boolean=$((cat $storage_json | jq '.GAME_UPDATER.baseGame.downloaded' || echo false))
-	export base_extracted_boolean=$((cat $storage_json | jq '.GAME_UPDATER.baseGame.extracted' || echo false))
-	export updater_downloaded_boolean=$((cat $storage_json | jq '.GAME_UPDATER.updater.downloaded' || echo false))
-	export updater_extracted_boolean=$((cat $storage_json | jq '.GAME_UPDATER.updater.extracted' || echo false))
+	export base_downloaded_boolean=$(cat $storage_json | jq '.GAME_UPDATER.baseGame.downloaded')
+	export base_extracted_boolean=$(cat $storage_json | jq '.GAME_UPDATER.baseGame.extracted')
+	export updater_downloaded_boolean=$(cat $storage_json | jq '.GAME_UPDATER.updater.downloaded')
+	export updater_extracted_boolean=$(cat $storage_json | jq '.GAME_UPDATER.updater.extracted')
 	export horizon_json=$(curl https://api.github.com/repos/HorizonFFXI/HorizonXI-Launcher-Binaries/releases | jq '.')
 	if [[ ${base_downloaded_boolean} == "true" && ${base_extracted_boolean} == "true" && ${updater_downloaded_boolean} == "true" && ${updater_extracted_boolean} == "true" ]]; then
 		export latest_version=$(echo ${horizon_json} | jq -r '.[].name' | head -n1)
