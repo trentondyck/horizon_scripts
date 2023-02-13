@@ -103,18 +103,27 @@ add_non_steam_game(){
 
 	# 6 load the vdf, grab the app_id
 	# Source - https://github.com/DavidoTek/ProtonUp-Qt/issues/175
-	userdata_int=$(ls ${steam_dir}/userdata/)
-	shortcuts_vdf=$(echo ${steam_dir}/userdata/${userdata_int}/config/shortcuts.vdf)
 
-	echo "Installing to $shortcuts_vdf"
-	# Documentation - https://github.com/ValvePython/vdf
-	# app_id=$(python -c "import vdf; d=vdf.binary_loads(open('${shortcuts_vdf}', 'rb').read()); items = list(d['shortcuts'].values()); print([i for i in items if i['appname'] in ['${app_name}']][0]['appid']+2**32);")
+	# These two are broken for multi-user installs
+	# userdata_int=$(ls ${steam_dir}/userdata/)
+	# shortcuts_vdf=$(echo ${steam_dir}/userdata/${userdata_int}/config/shortcuts.vdf)
+
+	# Multi-user support for shortcuts vdf:
+	shortcuts_vdf=$(grep -ir "Horizon XI" /home/deck/.local/share/Steam/userdata/ 2>&1 | grep "shortcuts.vdf" | awk '{print $2}' | sed 's/://g')
+
+	for sv in ${shortcuts_vdf}; do
+
+		userdata_int=$(echo $sv | sed 's/.*userdata\///g' | sed 's/\/config.*$//g')
+		echo "Installing to $sv for $userdata_int"
+
+		# Documentation - https://github.com/ValvePython/vdf
+		# app_id=$(python -c "import vdf; d=vdf.binary_loads(open('${shortcuts_vdf}', 'rb').read()); items = list(d['shortcuts'].values()); print([i for i in items if i['appname'] in ['${app_name}']][0]['appid']+2**32);")
 
 app_id=$(
 python << END
 
 import vdf
-d=vdf.binary_loads(open('${shortcuts_vdf}', 'rb').read());
+d=vdf.binary_loads(open('${sv}', 'rb').read());
 items = list(d['shortcuts'].values());
 data = items
 
@@ -136,23 +145,24 @@ print(appid+2**32)
 END
 )
 
-	echo "app_id: $app_id"
+		echo "app_id: $app_id"
 
-	# Download assets and place them in steam grid
-	grid_dir=$(echo ${steam_dir}/userdata/${userdata_int}/config/grid)
-	mkdir -p ${grid_dir}
-	curl -L --max-redirs 5 --output "${grid_dir}/${app_id}_hero.png" "${raw_github_url}/appid_hero.png"
-	curl -L --max-redirs 5 --output "${grid_dir}/${app_id}_logo.png" "${raw_github_url}/appid_logo.png"
-	curl -L --max-redirs 5 --output "${grid_dir}/${app_id}.png" "${raw_github_url}/appid.png"
-	curl -L --max-redirs 5 --output "${grid_dir}/${app_id}p.png" "${raw_github_url}/appidp.png"
+		# Download assets and place them in steam grid
+		grid_dir=$(echo ${steam_dir}/userdata/${userdata_int}/config/grid)
+		mkdir -p ${grid_dir}
+		curl -L --max-redirs 5 --output "${grid_dir}/${app_id}_hero.png" "${raw_github_url}/appid_hero.png"
+		curl -L --max-redirs 5 --output "${grid_dir}/${app_id}_logo.png" "${raw_github_url}/appid_logo.png"
+		curl -L --max-redirs 5 --output "${grid_dir}/${app_id}.png" "${raw_github_url}/appid.png"
+		curl -L --max-redirs 5 --output "${grid_dir}/${app_id}p.png" "${raw_github_url}/appidp.png"
 
+	done
+		
 	config_vdf=${steam_dir}/config/config.vdf
 	cp -f ${config_vdf} ${horizon_dir}/bak.config_vdf
 	# Documentation - https://github.com/ValvePython/vdf
 	python -c "import vdf; d=vdf.load(open('${config_vdf}')); ctm = d['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping']; ctm['${app_id}']={ 'name': 'GE-Proton7-42', 'config': '', 'priority': '250' }; vdf.dump(d, open('${horizon_dir}/config.vdf','w'), pretty=True);"
+	cp -f ${horizon_dir}/config.vdf $config_vdf
 
-
-        cp -f ${horizon_dir}/config.vdf $config_vdf
 	restart_steam
 	echo "Successfully added nonsteam game"
 
