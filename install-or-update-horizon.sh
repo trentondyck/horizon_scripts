@@ -14,6 +14,7 @@ init(){
 		export card_free_space=$(df -h | grep "/run/media" | awk '{print $4}' | sed 's/G//g')
 		export sd_link="true"
 	fi
+	mkdir -p "${steam_dir}/steamapps/compatdata/"
 	export config_json=$(sudo find ${steam_dir}/steamapps/compatdata/ -name config.json -type f | grep HorizonXI)
 	if [[ $(echo $config_json | sed 's/ /\n/g' | wc -l) -gt 1 ]]; then
 		echo "too many installations found. try uninstalling one of them"
