@@ -184,7 +184,8 @@ vdf.dump(d, open('${horizon_dir}/config.vdf','w'), pretty=True)
 
 END
 
-	cp -f ${horizon_dir}/config.vdf $config_vdf
+	cp -f ${horizon_dir}/config.vdf ${config_vdf}
+	echo "Should have copied ${horizon_dir}/config.vdf to $config_vdf"
 
 	restart_steam
 	echo "Successfully added nonsteam game"
