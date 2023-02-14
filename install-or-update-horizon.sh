@@ -31,19 +31,6 @@ init(){
 	fi
 	export config_prefix=$(echo $config_json | sed 's/\/config.json//g')
 	export storage_json=$(echo ${config_prefix}/storage.json)
-	if [[ -f ${storage_json} ]]; then
-                echo "Found storage json";
-        else
-		if [[ -f ${config_json} ]]; then
-                	echo "Downloading storage json to ${config_prefix}"
-                	mkdir -p "${config_prefix}"
-                	curl -L --max-redirs 5 --output "${storage_json}" "${raw_github_url}/storage.json"
-		else
-                	echo "Downloading storage json to ${horizon_dir}"
-                	mkdir -p "${horizon_dir}"
-                	curl -L --max-redirs 5 --output "${horizon_dir}/storage.json" "${raw_github_url}/storage.json"
-		fi
-        fi
 	export base_downloaded_boolean=$(cat $storage_json | jq '.GAME_UPDATER.baseGame.downloaded')
 	export base_extracted_boolean=$(cat $storage_json | jq '.GAME_UPDATER.baseGame.extracted')
 	export updater_downloaded_boolean=$(cat $storage_json | jq '.GAME_UPDATER.updater.downloaded')
@@ -279,22 +266,7 @@ update(){
 			echo "Sometimes you may have to launch the game multiple times initially to get it working"
 			echo "After the game launches, complete the download before running update-horizon.sh again"
 			echo "If the launcher is stuck 'verifying game files', or it opens and minimizes/exits immediately, try downloading in game mode"
-
-			echo "Installing storage json manually, hopefully this removes install dir choice from the user"
-			export steam_id=$(grep -sir "Horizon XI" ${steam_dir}/userdata/ | grep -v backup | grep screenshots | awk '{print $2}' | sed 's/"//g')
-			export initial_install="true"
-        		steam steam://rungameid/${steam_id}
-			sleep 10
-			export config_json=$(sudo find ${steam_dir}/steamapps/compatdata/ -name config.json -type f | grep HorizonXI)
-			export config_prefix=$(echo $config_json | sed 's/\/config.json//g')
-			export storage_json=$(echo ${config_prefix}/storage.json)
-			mkdir -p ${config_prefix}
-			if [[ -f ${storage_json} ]]; then
-				echo "Found existing storage json"
-			else
-				echo "Copying ${horizon_dir}/storage.json to ${storage_json}"
-				cp ${horizon_dir}/storage.json ${storage_json}
-			fi
+			echo "Check compatibility, make sure Proton GE 7 42 is checked, then launch the game"
 		fi
 	else
 		# Latest version is not v1.0.1
