@@ -308,6 +308,7 @@ launch(){
 
 	if [[ ${initial_install} == "false" ]]; then
 		steam_id=$(grep -sir "Horizon XI" ${steam_dir}/userdata/ | grep -v backup | grep screenshots | awk '{print $2}' | sed 's/"//g')
+		if [[ ${steam_id} == "" ]]; then echo "Coudlnt find screenshots.vdf, manually launch the application after adding proton compat layer"; fi 
 		if [[ $(ps -ef | grep steam | wc -l) -le 12 ]]; then
 			restart_steam
 			steam steam://rungameid/${steam_id}
