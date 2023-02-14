@@ -43,6 +43,12 @@ init(){
 		echo "Searching home directory for horizon zip, this may take a while..."
 		sudo find /home -name "HorizonXI.zip" -type f | sed 's/ /\\ /g' | xargs -i rm {}
 		export current_version=$(cat $config_json | jq -r '.__internal__.migrations.version' | sed 's/^/v/g')
+	elif [[ (-f ${horizon_dir}/current_version) && (! -f ${storage_json}) ]]; then 
+		current_version=$(cat ${horizon_dir}/current_version)
+                export latest_version=$(echo ${horizon_json} | jq -r '.[].name' | head -n1)
+                # Since everythings done downloading we can clean up
+                echo "Searching home directory for horizon zip, this may take a while..."
+                sudo find /home -name "HorizonXI.zip" -type f | sed 's/ /\\ /g' | xargs -i rm {}
 	else
 		# Let's hard code latest version to v1.0.1, since the installer isn't complete we need to download & complete the install on v1.0.1 before updating
 		# See Note: https://github.com/hilts-vaughan/hilts-vaughan.github.io/blob/master/_posts/2022-12-16-installing-horizon-xi-linux.md#install-horizonxi---steam-play-steam-deck--other-systems
@@ -212,6 +218,7 @@ update(){
 	7z -y x installer.exe
 	echo "Expanding ${nupkg_name}..."
 	7z -y x ${nupkg_name}
+	echo "current_version=${latest_version}" > ${horizon_dir}/current_version
 	if [[ ${latest_version} == "v1.0.1" ]]; then
 		if [[ $(ps -ef | grep steam | wc -l) -le 12 ]]; then
 			restart_steam
