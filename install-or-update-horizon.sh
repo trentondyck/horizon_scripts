@@ -244,7 +244,11 @@ update(){
 						echo "Found simlink, nothing further to do here"
 					else
 						mkdir -p "/run/media/mmcblk0p1/steamapps/compatdata"
-						cp -r ${steam_dir}/steamapps/compatdata/* /run/media/mmcblk0p1/steamapps/compatdata/
+						if [[ -f ${steam_dir}/steamapps/compatdata ]]; then
+							cp -r ${steam_dir}/steamapps/compatdata/* /run/media/mmcblk0p1/steamapps/compatdata/
+						else
+							mkdir -p ${steam_dir}/steamapps/
+						fi
 						cd ${steam_dir}/steamapps
 						ln -s /run/media/mmcblk0p1/steamapps/compatdata
 					fi
@@ -253,8 +257,12 @@ update(){
 						echo "Found simlink, nothing further to do here"
 					else
 						mkdir -p "/run/media/mmcblk0p1/steamapps/compatdata"
-						cp -r ${steam_dir}/steamapps/compatdata/* /run/media/mmcblk0p1/steamapps/compatdata/
-						mv ${steam_dir}/steamapps/compatdata ${steam_dir}/steamapps/compatdata_backup
+						if [[ -f ${steam_dir}/steamapps/compatdata ]]; then
+							cp -r ${steam_dir}/steamapps/compatdata/* /run/media/mmcblk0p1/steamapps/compatdata/
+							mv ${steam_dir}/steamapps/compatdata ${steam_dir}/steamapps/compatdata_backup
+						else
+							mkdir -p ${steam_dir}/steamapps/
+						fi
 						cd ${steam_dir}/steamapps
 						ln -s /run/media/mmcblk0p1/steamapps/compatdata
 					fi
