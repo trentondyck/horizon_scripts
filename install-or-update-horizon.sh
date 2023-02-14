@@ -19,6 +19,7 @@ init(){
 		else
 			echo "SD Card not formatted. Do that manually and try running the script again..."
 			echo "https://www.tomsguide.com/how-to/how-to-format-an-sd-card-on-the-steam-deck"
+			echo "https://www.youtube.com/watch?v=mdcCVqJUsrk"
 		fi
 	fi
 	mkdir -p "${steam_dir}/steamapps/compatdata/"
