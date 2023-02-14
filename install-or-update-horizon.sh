@@ -266,19 +266,19 @@ update(){
 			echo "If the launcher is stuck 'verifying game files', or it opens and minimizes/exits immediately, try downloading in game mode"
 
 			echo "Installing storage json manually, hopefully this removes install dir choice from the user"
-			steam_id=$(grep -sir "Horizon XI" ${steam_dir}/userdata/ | grep -v backup | grep screenshots | awk '{print $2}' | sed 's/"//g')
+			export steam_id=$(grep -sir "Horizon XI" ${steam_dir}/userdata/ | grep -v backup | grep screenshots | awk '{print $2}' | sed 's/"//g')
 			export initial_install="true"
         		steam steam://rungameid/${steam_id}
 			sleep 10
-			config_json=$(sudo find ${steam_dir}/steamapps/compatdata/ -name config.json -type f | grep HorizonXI)
-			config_prefix=$(echo $config_json | sed 's/\/config.json//g')
-			storage_json=$(echo ${config_prefix}/storage.json)
+			export config_json=$(sudo find ${steam_dir}/steamapps/compatdata/ -name config.json -type f | grep HorizonXI)
+			export config_prefix=$(echo $config_json | sed 's/\/config.json//g')
+			export storage_json=$(echo ${config_prefix}/storage.json)
 			mkdir -p ${config_prefix}
 			if [[ -f ${storage_json} ]]; then
 				echo "Found existing storage json"
 			else
-				echo "Downloading new storage json"
-				curl -L --max-redirs 5 --output "${storage_json}" "${raw_github_url}/storage.json"
+				echo "Copying ${horizon_dir}/storage.json to ${storage_json}"
+				cp ${horizon_dir}/storage.json ${storage_json}
 			fi
 		fi
 	else
