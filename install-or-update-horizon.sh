@@ -23,6 +23,7 @@ init(){
 		fi
 	fi
 	mkdir -p "${steam_dir}/steamapps/compatdata/"
+	echo "Searching for the config.json file, if you have a ton on the disk this may take a while..."
 	export config_json=$(sudo find ${steam_dir}/steamapps/compatdata/ -name config.json -type f | grep HorizonXI)
 	if [[ $(echo $config_json | sed 's/ /\n/g' | wc -l) -gt 1 ]]; then
 		echo "too many installations found. try uninstalling one of them"
