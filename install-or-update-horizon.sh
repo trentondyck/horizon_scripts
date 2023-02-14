@@ -291,7 +291,31 @@ update(){
 launch(){
 
 	if [[ ${initial_install} == "false" ]]; then
-		steam_id=$(grep -sir "Horizon XI" ${steam_dir}/userdata/ | grep -v backup | grep screenshots | awk '{print $2}' | sed 's/"//g')
+
+		# Leaving the old way here, commented out in case I need to revert for some reason, or make an if/else block.
+		# steam_id=$(grep -sir "Horizon XI" ${steam_dir}/userdata/ | grep -v backup | grep screenshots | awk '{print $2}' | sed 's/"//g')
+
+		# Calculating the steam ID is faster, less error prone
+export steam_id=$(
+python << END
+import crcmod.predefined
+
+target = r'"/home/deck/horizon-xi/lib/net45/HorizonXI-Launcher.exe"'
+label = 'Horizon XI'
+
+crc32_func = crcmod.predefined.mkPredefinedCrcFun('crc-32')
+checksum = crc32_func((target + label).encode('utf-8'))
+
+steam_id = checksum | 0x80000000
+
+top_32 = steam_id
+bottom_32 = 0x02000000
+legacy_steam_id = (top_32 << 32) | bottom_32
+
+print(str(legacy_steam_id))
+END
+)
+
 		if [[ ${steam_id} == "" ]]; then echo "Coudlnt find screenshots.vdf, manually launch the application after adding proton compat layer"; fi 
 		if [[ $(ps -ef | grep steam | wc -l) -le 12 ]]; then
 			restart_steam

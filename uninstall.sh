@@ -16,13 +16,33 @@ init(){
 			exit 2
 		fi
 	fi
+
+export steam_id=$(
+python << END
+import crcmod.predefined
+
+target = r'"/home/deck/horizon-xi/lib/net45/HorizonXI-Launcher.exe"'
+label = 'Horizon XI'
+
+crc32_func = crcmod.predefined.mkPredefinedCrcFun('crc-32')
+checksum = crc32_func((target + label).encode('utf-8'))
+
+steam_id = checksum | 0x80000000
+
+top_32 = steam_id
+bottom_32 = 0x02000000
+legacy_steam_id = (top_32 << 32) | bottom_32
+
+print(str(legacy_steam_id))
+END
+)
+
 }
 
 uninstall(){
 
 	for cj in ${config_json}; do
 		export horizon_directory=$(echo $cj | sed 's/pfx.*$//g')
-		export steam_id=$(grep -sir "Horizon XI" /home/deck/.local/share/Steam/userdata/ | grep screenshots | awk '{print $2}' | sed 's/"//g')
 		rm -Rf ~/horizon-xi
 		if [[ $(ps -ef | grep steam | wc -l) -le 12 ]]; then
 			echo "Steam is not running. Start steam and try again"
