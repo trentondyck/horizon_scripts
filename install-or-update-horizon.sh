@@ -189,9 +189,13 @@ END
 
 restart_steam(){
 
+	if [[ $(ps -ef | grep steam | wc -l) -le 12 ]]; then
+		echo "Steam isn't running, continuing..."
+	else
+        	killall steam
+        	sleep 10
+	fi
         # Restart steam
-        killall steam
-        sleep 10
         (steam &>/dev/null) &
 
 }
