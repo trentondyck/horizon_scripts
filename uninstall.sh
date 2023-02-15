@@ -17,7 +17,13 @@ init(){
 		fi
 	fi
 
-export steam_id=$(
+	        steam_id_grep=$(grep -sir "Horizon XI" ${steam_dir}/userdata/ | grep -v backup | grep screenshots | awk '{print $2}' | sed 's/"//g')
+
+		# Calculating the steam ID is faster, less error prone (also incorrect)
+		# The CRC32 algorithm is only for Big Picture, and possibly even old Big Picture. Regular Steam apps no longer use the CRC algorithm. See here (https://github.com/boppreh/steamgrid/blob/master/games.go#L115-L137) and this comment by DavidoTek that verifies that the CRC calculation is not correct anymore (DavidoTek/ProtonUp-Qt#175 (comment)).
+		# That said, the legacy steam id works on my deck. leaving this blurb here for investigation later.
+
+export steam_ids_python=$(
 python << END
 import crcmod.predefined
 
@@ -33,9 +39,45 @@ top_32 = steam_id
 bottom_32 = 0x02000000
 legacy_steam_id = (top_32 << 32) | bottom_32
 
-print(str(legacy_steam_id))
+print(str(steam_id) + "," + str(legacy_steam_id))
 END
 )
+                new_steam_id=$(echo $steam_ids_python | sed 's/,.*//g')
+                legacy_steam_id=$(echo $steam_ids_python | sed 's/.*,//g')
+
+                if [[ ${steam_id_grep} == "" ]]; then
+                        if [[ ${legacy_steam_id} == "" ]]; then
+                                if [[ ${new_steam_id} == "" ]]; then
+                                        echo "All methods to find a steam ID failed. Please seek further guidance or debug manually"
+                                        exit 2
+                                else
+                                        export steam_id=${new_steam_id}
+                                fi
+                        else
+                                export steam_id=${legacy_steam_id}
+                        fi
+                else
+                        if [[ ${steam_id_grep} == ${legacy_steam_id} ]]; then
+                                echo "Steam ID from grep matches legacy steam ID from python"
+                                export steam_id=${steam_id_grep}
+                        else
+                                echo "Steam ID from grep is a mismatch from python"
+                                export steam_id=${steam_id_grep}
+                        fi
+                fi
+
+}
+
+restart_steam(){
+
+        if [[ $(ps -ef | grep steam | wc -l) -le 12 ]]; then
+                echo "Steam isn't running, continuing..."
+        else
+                killall steam
+                sleep 10
+        fi
+        # Restart steam
+        (steam &>/dev/null) &
 
 }
 
@@ -45,8 +87,8 @@ uninstall(){
 		export horizon_directory=$(echo $cj | sed 's/pfx.*$//g')
 		rm -Rf ~/horizon-xi
 		if [[ $(ps -ef | grep steam | wc -l) -le 12 ]]; then
-			echo "Steam is not running. Start steam and try again"
-			exit 2
+			restart_steam
+        		steam steam://rungameid/${steam_id}
 		else
         		steam steam://rungameid/${steam_id}
 		fi
