@@ -31,6 +31,8 @@ Or, for the incredibly lazy, open konsole, and paste:
 
 For any update after the first you can copy to your desktop and run it with double click.
 
+Some installations are not checking the compatibility mode by default, so if the game is not launching please right click the game in steam library, properties, compatibility and check that box
+
 ### Uninstallation
 
 ```
