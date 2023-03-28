@@ -338,6 +338,9 @@ END
 				export steam_id=${steam_id_grep}
 			else
 				echo "Steam ID from grep is a mismatch from python"
+				echo "Grep Steam ID: ${steam_id_grep}"
+				echo "Legacy Steam ID: ${legacy_steam_id}"
+				echo "Setting steam_id to Grep Steam ID..."
 				export steam_id=${steam_id_grep}
 			fi
 		fi
