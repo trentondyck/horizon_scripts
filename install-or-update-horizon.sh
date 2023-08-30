@@ -105,7 +105,8 @@ add_non_steam_game(){
 
 	# 2 Add a non-steam game via stl
 	# docs - https://github.com/sonic2kk/steamtinkerlaunch/wiki/Add-Non-Steam-Game
-	${horizon_dir}/stl/sonic2kk-steamtinkerlaunch-e7c5ada/steamtinkerlaunch addnonsteamgame --appname="${app_name}" --exepath=${horizon_dir}/lib/net45/HorizonXI-Launcher.exe --startdir=${horizon_dir}/lib/net45/ --iconpath=${horizon_dir}/icon.png
+	stl_dir=$(ls -l ${horizon_dir}/stl/ | grep sonic | awk '{print $9}')
+	${stl_dir}/steamtinkerlaunch addnonsteamgame --appname="${app_name}" --exepath=${horizon_dir}/lib/net45/HorizonXI-Launcher.exe --startdir=${horizon_dir}/lib/net45/ --iconpath=${horizon_dir}/icon.png
 
 	# 4 install vdf module
 	/home/deck/.local/bin/pip install vdf
