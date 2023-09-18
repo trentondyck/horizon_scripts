@@ -167,6 +167,8 @@ END
 
 	done
 		
+	# Before modifying config.vdf Steam needs to be closed. See https://github.com/sonic2kk/steamtinkerlaunch/pull/908#issuecomment-1722569450
+        killall steam
 	config_vdf=${steam_dir}/config/config.vdf
 	cp -f ${config_vdf} ${horizon_dir}/bak.config_vdf
 	# Documentation - https://github.com/ValvePython/vdf
