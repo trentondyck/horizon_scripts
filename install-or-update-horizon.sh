@@ -89,107 +89,36 @@ add_non_steam_game(){
 
 	# Source - https://github.com/sonic2kk/steamtinkerlaunch/issues/729
 	# 1 Download the latest release
-	if [[ $( which ${horizon_dir}/stl/sonic2kk-steamtinkerlaunch-e7c5ada/steamtinkerlaunch ) ]]; then
+	if [[ $( which ${horizon_dir}/stl/stl/steamtinkerlaunch ) ]]; then
 	        echo "Steam tinker launch already installed, continuing..."
 	else
+		rm -Rf ${horizon_dir}/stl
 	        stl_json=$(curl https://api.github.com/repos/sonic2kk/steamtinkerlaunch/releases)
 	        latest_stl_version=$(echo ${stl_json} | jq -r '.[].tag_name' | head -n1)
 	        stl_zip_url=$(echo ${stl_json} | jq -r '.[] | select(.tag_name=="'${latest_stl_version}'") | .zipball_url')
 	        echo "Downloading... ${stl_zip_url}"
 		curl -L --max-redirs 5 --output ${horizon_dir}/stl.zip "${stl_zip_url}"
 		unzip ${horizon_dir}/stl.zip -d ${horizon_dir}/stl
+		mv ${horizon_dir}/stl/* ${horizon_dir}/stl/stl
 	fi
 
-	# 1 Download icon
-	curl -L --max-redirs 5 --output ${horizon_dir}/icon.png "${raw_github_url}/icon.png"
-
-	# 2 Add a non-steam game via stl
+	# Add a non-steam game via stl
 	# docs - https://github.com/sonic2kk/steamtinkerlaunch/wiki/Add-Non-Steam-Game
-	stl_dir=$(ls -l ${horizon_dir}/stl/ | grep sonic | awk '{print $9}')
-	${stl_dir}/steamtinkerlaunch addnonsteamgame --appname="${app_name}" --exepath=${horizon_dir}/lib/net45/HorizonXI-Launcher.exe --startdir=${horizon_dir}/lib/net45/ --iconpath=${horizon_dir}/icon.png
 
-	# 4 install vdf module
-	/home/deck/.local/bin/pip install vdf
-
-	# 6 load the vdf, grab the app_id
-	# Source - https://github.com/DavidoTek/ProtonUp-Qt/issues/175
-
-	# These two are broken for multi-user installs
-	# userdata_int=$(ls ${steam_dir}/userdata/)
-	# shortcuts_vdf=$(echo ${steam_dir}/userdata/${userdata_int}/config/shortcuts.vdf)
-
-	# Multi-user support for shortcuts vdf:
-	shortcuts_vdf=$(grep -ir "Horizon XI" /home/deck/.local/share/Steam/userdata/ 2>&1 | grep "shortcuts.vdf" | awk '{print $2}' | sed 's/://g')
-
-	for sv in ${shortcuts_vdf}; do
-
-		userdata_int=$(echo $sv | sed 's/.*userdata\///g' | sed 's/\/config.*$//g')
-		echo "Installing to $sv for $userdata_int"
-
-		# Documentation - https://github.com/ValvePython/vdf
-		# app_id=$(python -c "import vdf; d=vdf.binary_loads(open('${shortcuts_vdf}', 'rb').read()); items = list(d['shortcuts'].values()); print([i for i in items if i['appname'] in ['${app_name}']][0]['appid']+2**32);")
-
-app_id=$(
-python << END
-
-import vdf
-d=vdf.binary_loads(open('${sv}', 'rb').read());
-items = list(d['shortcuts'].values());
-data = items
-
-def get_appid(appname):
-    for item in data:
-        if item.get("AppName") == appname or item.get("appname") == appname:
-            return item.get("appid")
-
-appname = "Horizon XI"
-appid = get_appid(appname)
-
-#if appid:
-#    print(f"The appid for the app named {appname} is: {appid}")
-#else:
-#    print(f"No app found with name {appname}")
-
-print(appid+2**32)
-
-END
-)
-
-		echo "app_id: $app_id"
-
-		# Download assets and place them in steam grid
-		grid_dir=$(echo ${steam_dir}/userdata/${userdata_int}/config/grid)
-		mkdir -p ${grid_dir}
-		curl -L --max-redirs 5 --output "${grid_dir}/${app_id}_hero.png" "${raw_github_url}/appid_hero.png"
-		curl -L --max-redirs 5 --output "${grid_dir}/${app_id}_logo.png" "${raw_github_url}/appid_logo.png"
-		curl -L --max-redirs 5 --output "${grid_dir}/${app_id}.png" "${raw_github_url}/appid.png"
-		curl -L --max-redirs 5 --output "${grid_dir}/${app_id}p.png" "${raw_github_url}/appidp.png"
-
-	done
-		
-	# Before modifying config.vdf Steam needs to be closed. See https://github.com/sonic2kk/steamtinkerlaunch/pull/908#issuecomment-1722569450
+	# Steam must be stopped, for config.vdf changes to stick. See https://github.com/sonic2kk/steamtinkerlaunch/pull/908#issuecomment-1722569450
         killall steam
-	config_vdf=${steam_dir}/config/config.vdf
-	cp -f ${config_vdf} ${horizon_dir}/bak.config_vdf
-	# Documentation - https://github.com/ValvePython/vdf
-	echo "Installing Proton layer to ${config_vdf}"
 
-python << END
+	# Download assets and place them in steam grid
+	curl -L --max-redirs 5 --output "${horizon_dir}/icon.png" "${raw_github_url}/icon.png"
+	curl -L --max-redirs 5 --output "${horizon_dir}/appid_hero.png" "${raw_github_url}/appid_hero.png"
+	curl -L --max-redirs 5 --output "${horizon_dir}/appid_logo.png" "${raw_github_url}/appid_logo.png"
+	curl -L --max-redirs 5 --output "${horizon_dir}/appid.png" "${raw_github_url}/appid.png"
+	curl -L --max-redirs 5 --output "${horizon_dir}/appidp.png" "${raw_github_url}/appidp.png"
 
-import vdf
-d=vdf.load(open('${config_vdf}'))
+	stl_dir="${horizon_dir}/stl/stl"
 
-if not 'CompatToolMapping' in d['InstallConfigStore']['Software']['Valve']['Steam']:
-  d['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping']={}
-
-ctm = d['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping']
-ctm['${app_id}']={ 'name': 'GE-Proton7-42', 'config': '', 'priority': '250' }
-vdf.dump(d, open('${horizon_dir}/config.vdf','w'), pretty=True)
-
-END
-
-	cp -f ${horizon_dir}/config.vdf ${config_vdf}
-	echo "Should have copied ${horizon_dir}/config.vdf to $config_vdf"
+	# Absolute paths required. See https://github.com/sonic2kk/steamtinkerlaunch/issues/909
+	${stl_dir}/steamtinkerlaunch addnonsteamgame --appname="${app_name}" --exepath="/home/deck/horizon-xi/lib/net45/HorizonXI-Launcher.exe" --startdir="/home/deck/horizon-xi/lib/net45/" --iconpath="/home/deck/horizon-xi/icon.png" --compatibilitytool="GE-Proton7-42" --hero="/home/deck/horizon-xi/appid_hero.png" --logo="/home/deck/horizon-xi/appid_logo.png" --boxart="/home/deck/horizon-xi/appidp.png" --tenfoot="/home/deck/horizon-xi/appid.png" --copy
 
 	restart_steam
 	echo "Successfully added nonsteam game"
