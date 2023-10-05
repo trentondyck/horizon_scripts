@@ -56,13 +56,6 @@ init(){
 	fi
 	export download_url=$(echo ${horizon_json} | jq -r '.[] | select(.tag_name=="'${latest_version}'") | .assets[] | select ( .name | endswith ("exe") ) | .browser_download_url')
 	export nupkg_name=$(echo ${horizon_json} | jq -r '.[] | select(.tag_name=="'${latest_version}'") | .assets[] | select ( .name | endswith ("nupkg") ) | .name ')
-	# 3 Download pip
-	if [[ $(which /home/deck/.local/bin/pip) ]]; then
-	        echo "pip already installed. Carrying on...";
-	else
-	        wget https://bootstrap.pypa.io/get-pip.py
-	        python get-pip.py --user
-	fi
 	echo "storage_json: $storage_json"
 	echo "latest_version: $latest_version"
 	echo "current_version: $current_version"
@@ -109,7 +102,10 @@ add_non_steam_game(){
 	${stl_dir}/steamtinkerlaunch addnonsteamgame --appname="${app_name}" --exepath=${horizon_dir}/lib/net45/HorizonXI-Launcher.exe --startdir=${horizon_dir}/lib/net45/ --iconpath=${horizon_dir}/icon.png
 
 	# 4 install vdf module
-	/home/deck/.local/bin/pip install vdf
+	# https://pythonspeed.com/articles/externally-managed-environment-pep-668/
+	python -m venv ./myvenv
+        . ./myvenv/bin/activate
+        pip install vdf
 
 	# 6 load the vdf, grab the app_id
 	# Source - https://github.com/DavidoTek/ProtonUp-Qt/issues/175
@@ -227,9 +223,12 @@ update(){
 			restart_steam
 		else
 			# Install GE-Proton7-42, known to work with Horizon. Later versions can be found via `/home/deck/.local/bin/protonup --releases`
-			/home/deck/.local/bin/pip install protonup
+			# https://pythonspeed.com/articles/externally-managed-environment-pep-668/
+	                python -m venv ./myvenv
+                        . ./myvenv/bin/activate
+			pip install protonup
 			echo "Downloading GE-Proton7-42, this may take a while..."
-			/home/deck/.local/bin/protonup -t GE-Proton7-42 -y
+			protonup -t GE-Proton7-42 -y
 			restart_steam
 			add_non_steam_game
 			# Low disk space version
