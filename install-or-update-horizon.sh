@@ -82,7 +82,10 @@ add_non_steam_game(){
 
 	# Source - https://github.com/sonic2kk/steamtinkerlaunch/issues/729
 	# 1 Download the latest release
-	if [[ $( which ${horizon_dir}/stl/sonic2kk-steamtinkerlaunch-e7c5ada/steamtinkerlaunch ) ]]; then
+	stl_suffix=$(ls -l ${horizon_dir}/stl/ | grep sonic | awk '{print $9}')
+	stl_dir="${horizon_dir}/stl/${stl_suffix}"
+
+	if [[ $( which ${stl_dir}/steamtinkerlaunch ) ]]; then
 	        echo "Steam tinker launch already installed, continuing..."
 	else
 	        stl_json=$(curl https://api.github.com/repos/sonic2kk/steamtinkerlaunch/releases)
@@ -98,7 +101,6 @@ add_non_steam_game(){
 
 	# 2 Add a non-steam game via stl
 	# docs - https://github.com/sonic2kk/steamtinkerlaunch/wiki/Add-Non-Steam-Game
-	stl_dir=$(ls -l ${horizon_dir}/stl/ | grep sonic | awk '{print $9}')
 	${stl_dir}/steamtinkerlaunch addnonsteamgame --appname="${app_name}" --exepath=${horizon_dir}/lib/net45/HorizonXI-Launcher.exe --startdir=${horizon_dir}/lib/net45/ --iconpath=${horizon_dir}/icon.png
 
 	# 4 install vdf module
