@@ -64,6 +64,24 @@ init(){
 
 check(){
 
+	echo "Checking bootloader..."
+	# Bad
+	# 094254091e67e1153ec1be7215f86772  horizon-loader.exe
+	# Good, i.e.
+	# 4695c8046ad15471cf51b540c094c588
+
+	export steam_dir="/home/deck/.local/share/Steam"
+	export loader_exe=$(sudo find ${steam_dir}/steamapps/compatdata/ -name horizon-loader.exe -type f)
+	export loader_prefix=$(echo $loader_exe | sed 's/\/horizon-loader.exe//g')
+	md=$(md5sum "${loader_prefix}/horizon-loader.exe" | awk '{print $1}')
+
+        if [[ $md == "094254091e67e1153ec1be7215f86772" ]]; then
+		echo Bad bootloader found, re-downloading
+	        curl -L --max-redirs 5 --output ${loader_prefix}/horizon-loader.exe https://raw.githubusercontent.com/trentondyck/horizon_scripts/main/horizon-loader.exe
+	else
+		echo "Bootloader is fine (probably?), continuing..."
+	fi
+
 	echo "Checking for version update..."
 	echo "Installed version: $current_version"
 	echo "Latest version: $latest_version"
