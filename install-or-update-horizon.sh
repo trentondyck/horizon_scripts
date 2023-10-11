@@ -112,6 +112,8 @@ add_non_steam_game(){
 	        echo "Downloading... ${stl_zip_url}"
 		curl -L --max-redirs 5 --output ${horizon_dir}/stl.zip "${stl_zip_url}"
 		unzip ${horizon_dir}/stl.zip -d ${horizon_dir}/stl
+	        export stl_suffix=$(ls -l ${horizon_dir}/stl/ | grep sonic | awk '{print $9}')
+	        export stl_dir="${horizon_dir}/stl/${stl_suffix}"
 	fi
 
 	# 1 Download icon
