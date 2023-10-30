@@ -78,7 +78,7 @@ check(){
 
         if [[ $md == "094254091e67e1153ec1be7215f86772" ]]; then
 		echo Bad bootloader found, re-downloading
-	        curl -L --max-redirs 5 --output ${loader_prefix}/horizon-loader.exe "https://raw.githubusercontent.com/trentondyck/horizon_scripts/main/horizon-loader.exe"
+	        curl -L --max-redirs 5 --output "${loader_prefix}/horizon-loader.exe" "https://raw.githubusercontent.com/trentondyck/horizon_scripts/main/horizon-loader.exe"
 	else
 		echo "Bootloader is fine (probably?), continuing..."
 	fi
