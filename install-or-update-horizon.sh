@@ -36,7 +36,7 @@ init(){
 	export base_extracted_boolean=$(cat $storage_json | jq '.GAME_UPDATER.baseGame.extracted')
 	export updater_downloaded_boolean=$(cat $storage_json | jq '.GAME_UPDATER.updater.downloaded')
 	export updater_extracted_boolean=$(cat $storage_json | jq '.GAME_UPDATER.updater.extracted')
-	export horizon_json=$(curl https://api.github.com/repos/HorizonFFXI/HorizonXI-Launcher-Binaries/releases | jq '.')
+	export horizon_json=$(curl "https://api.github.com/repos/HorizonFFXI/HorizonXI-Launcher-Binaries/releases" | jq '.')
 	if [[ ${base_downloaded_boolean} == "true" && ${base_extracted_boolean} == "true" && ${updater_downloaded_boolean} == "true" && ${updater_extracted_boolean} == "true" ]]; then
 		export latest_version=$(echo ${horizon_json} | jq -r '.[].name' | head -n1)
 		# Since everythings done downloading we can clean up
@@ -107,18 +107,18 @@ add_non_steam_game(){
 	if [[ $( which ${stl_dir}/steamtinkerlaunch ) ]]; then
 	        echo "Steam tinker launch already installed, continuing..."
 	else
-	        stl_json=$(curl https://api.github.com/repos/sonic2kk/steamtinkerlaunch/releases)
+	        stl_json=$(curl "https://api.github.com/repos/sonic2kk/steamtinkerlaunch/releases")
 	        latest_stl_version=$(echo ${stl_json} | jq -r '.[].tag_name' | head -n1)
 	        stl_zip_url=$(echo ${stl_json} | jq -r '.[] | select(.tag_name=="'${latest_stl_version}'") | .zipball_url')
 	        echo "Downloading... ${stl_zip_url}"
-		curl -L --max-redirs 5 --output ${horizon_dir}/stl.zip "${stl_zip_url}"
+		curl -L --max-redirs 5 --output "${horizon_dir}/stl.zip" "${stl_zip_url}"
 		unzip ${horizon_dir}/stl.zip -d ${horizon_dir}/stl
 	        export stl_suffix=$(ls -l ${horizon_dir}/stl/ | grep sonic | awk '{print $9}')
 	        export stl_dir="${horizon_dir}/stl/${stl_suffix}"
 	fi
 
 	# 1 Download icon
-	curl -L --max-redirs 5 --output ${horizon_dir}/icon.png "${raw_github_url}/icon.png"
+	curl -L --max-redirs 5 --output "${horizon_dir}/icon.png" "${raw_github_url}/icon.png"
 
 	# 2 Add a non-steam game via stl
 	# docs - https://github.com/sonic2kk/steamtinkerlaunch/wiki/Add-Non-Steam-Game
@@ -234,7 +234,7 @@ update(){
 	mkdir -p ${horizon_dir}
 	echo "Found latest version... $latest_version"
 	echo "Downloading... $download_url"
-	curl -L --max-redirs 5 --output ${horizon_dir}/installer.exe "${download_url}"
+	curl -L --max-redirs 5 --output "${horizon_dir}/installer.exe" "${download_url}"
 	cd ${horizon_dir}
 	echo "Expanding installers..."
 	7z -y x installer.exe
