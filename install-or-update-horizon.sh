@@ -3,7 +3,7 @@ set -e
 
 init(){
 
-	sudo echo || (echo "Likely no password set, if it asks you for a current password and you haven't set one just hit enter to skip" && passwd)
+	sudo echo || (echo "Likely no password set or wrong password entered, attempting to create a new one (Keys pressed wont show up in konsole (security) but they are registered..." && passwd)
 	sudo echo || (echo "Wrong sudo password entered, either you didn't set it or you don't know what it is. Try 'passwd' in konsole and follow the prompts" && exit 2)
 	export initial_install="false"
 	export app_name="Horizon XI"
