@@ -1,14 +1,6 @@
 # horizon_scripts
 Check out [vaughan's gist](https://github.com/hilts-vaughan/hilts-vaughan.github.io/blob/master/_posts/2022-12-16-installing-horizon-xi-linux.md#install-horizonxi---steam-play-steam-deck--other-systems) for the step-by-step instructions if you run into trouble.
 
-### Prerequisites
-
-Set up a memorable sudo password in konsole. i.e.
-
-```
-passwd
-```
-
 ### Installation
 
 This script should:
@@ -30,8 +22,6 @@ Or, for the incredibly lazy, open konsole, and paste:
 ```
 
 For any update after the first you can copy to your desktop and run it with double click.
-
-Some installations are not checking the compatibility mode by default, so if the game is not launching please right click the game in steam library, properties, compatibility and check that box
 
 ### Uninstallation
 
