@@ -3,7 +3,11 @@ set -e
 
 init(){
 
-	sudo echo || (echo "Likely no password set or wrong password entered, attempting to create a new one (Keys pressed wont show up in konsole (security) but they are registered..." && passwd)
+	if $(passwd --status deck >/dev/null); then
+	  echo "Password is set, continuing...";
+	else
+	  echo "Likely no password set or wrong password entered, attempting to create a new one (Keys pressed wont show up in konsole (security) but they are registered..." && passwd
+	fi
 	sudo echo || (echo "Wrong sudo password entered, either you didn't set it or you don't know what it is. Try 'passwd' in konsole and follow the prompts" && exit 2)
 	export initial_install="false"
 	export app_name="Horizon XI"
