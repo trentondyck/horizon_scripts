@@ -3,6 +3,7 @@ set -e
 
 init(){
 
+	sudo echo || (echo "Wrong sudo password entered, either you didn't set it or you don't know what it is. Try 'passwd' in konsole and follow the prompts" && exit 2)
 	export initial_install="false"
 	export app_name="Horizon XI"
 	export raw_github_url="https://raw.githubusercontent.com/trentondyck/horizon_scripts/main"
