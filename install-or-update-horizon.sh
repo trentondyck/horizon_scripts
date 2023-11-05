@@ -333,7 +333,8 @@ launch(){
 	if [[ ${initial_install} == "false" ]]; then
 
 		# Leaving the old way here, commented out in case I need to revert for some reason, or make an if/else block.
-		steam_id_grep=$(grep -sir "Horizon XI" ${steam_dir}/userdata/ | grep -v backup | grep screenshots | awk '{print $2}' | sed 's/"//g')
+		# Usually only one id here but mine had two for some reason, and the second one worked to launch the game.
+		steam_id_grep=$(grep -sir "Horizon XI" ${steam_dir}/userdata/ | grep -v backup | grep screenshots | awk '{print $2}' | sed 's/"//g' | tail -n1)
 
                 # Calculating the steam ID is faster, less error prone (also incorrect)
                 # The CRC32 algorithm is only for Big Picture, and possibly even old Big Picture. Regular Steam apps no longer use the CRC algorithm. See here (https://github.com/boppreh/steamgrid/blob/master/games.go#L115-L137) and this comment by DavidoTek that verifies that the CRC calculation is not correct anymore (DavidoTek/ProtonUp-Qt#175 (comment)).
