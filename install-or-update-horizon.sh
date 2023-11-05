@@ -31,6 +31,8 @@ init(){
 	mkdir -p "${steam_dir}/steamapps/compatdata/"
 	echo "Searching for the config.json file, if you have a ton on the disk this may take a while..."
 	export config_json=$(sudo find ${steam_dir}/steamapps/compatdata/ -name config.json -type f | grep HorizonXI)
+
+
 	if [[ $(echo $config_json | sed 's/ /\n/g' | wc -l) -gt 1 ]]; then
 		echo "too many installations found. try uninstalling one of them"
 		echo $config_json | sed 's/ /\n/g'
@@ -40,15 +42,22 @@ init(){
 	export storage_json=$(echo ${config_prefix}/storage.json)
 	export base_downloaded_boolean=$(cat $storage_json | jq '.GAME_UPDATER.baseGame.downloaded')
 	export base_extracted_boolean=$(cat $storage_json | jq '.GAME_UPDATER.baseGame.extracted')
+	# Not actually booleans, this must have changed.
 	export updater_downloaded_boolean=$(cat $storage_json | jq '.GAME_UPDATER.updater.downloaded')
 	export updater_extracted_boolean=$(cat $storage_json | jq '.GAME_UPDATER.updater.extracted')
 	export horizon_json=$(curl "https://api.github.com/repos/HorizonFFXI/HorizonXI-Launcher-Binaries/releases" | jq '.')
-	if [[ ${base_downloaded_boolean} == "true" && ${base_extracted_boolean} == "true" && ${updater_downloaded_boolean} == "true" && ${updater_extracted_boolean} == "true" ]]; then
+	if [[ ${base_downloaded_boolean} == "true" && ${base_extracted_boolean} == "true" ]]; then
 		export latest_version=$(echo ${horizon_json} | jq -r '.[].name' | head -n1)
 		# Since everythings done downloading we can clean up
 		echo "Searching home directory for horizon zip, this may take a while..."
 		sudo find /home -name "HorizonXI.zip" -type f | sed 's/ /\\ /g' | xargs -i rm {}
 		export current_version=$(cat $config_json | jq -r '.__internal__.migrations.version' | sed 's/^/v/g')
+
+		# I think we can assume this is the second install at least here
+		# GamePad settings
+                cat <<< $(jq '.registrySettings.padmode000.value = [1,1,0,0,1,1]' "${config_json}") > "${config_json}"
+                cat <<< $(jq '.registrySettings.padsin000.value = [8,9,13,12,10,0,1,3,2,15,-1,-1,14,-33,-33,32,32,-36,-36,35,35,6,7,5,4,11,-1]' "${config_json}") > "${config_json}"
+
 	elif [[ (-f ${horizon_dir}/current_version) && (! -f ${storage_json}) ]]; then 
 		current_version=$(cat ${horizon_dir}/current_version)
                 export latest_version=$(echo ${horizon_json} | jq -r '.[].name' | head -n1)
