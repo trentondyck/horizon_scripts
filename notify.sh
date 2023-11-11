@@ -3,10 +3,14 @@
 
 > /tmp/last_error
 
+init(){
+
+  aecho $a  # Command to echo variable a
+}
 send_variables() {
 
 webhook_url="https://discord.com/api/webhooks/1172713482261631108/cH1dXLPV8jX1d16irijQVWjGbyHnXV4we4pxiXsx-hzBFER1pCG4jGgd3OI8Qh9MTae_" # Replace with your Slack webhook URL
-error_message=$(< /tmp/last_error)
+local error_message=$(< /tmp/last_error)
 
 # Capture environment variables
 data1=$(printenv | awk '{print}' ORS='\\n')
@@ -27,12 +31,6 @@ unique_to_arr2=$(comm -23 <(printf "%s\n" "${arr2[@]}") <(printf "%s\n" "${arr1[
 
 # Find unique variables in the above result not in arr3
 final_result=$(comm -23 <(printf "%s\n" "${unique_to_arr2[@]}") <(printf "%s\n" "${arr3[@]}"))
-
-# Print values of these unique variables
-# echo "Values of script-specific variables:"
-#for var in ${final_result[@]}; do
-#    echo "${var}=${!var}\n"
-#done
 
 # Initialize an empty string
 output=""
@@ -60,19 +58,9 @@ send_discord_notification() {
 # Redirect stderr to a temporary file to capture error messages
 exec 2> /tmp/last_error
 
-# Function to send notification to Slack
-#send_slack_notification() {
-#    message="Error in script at ${BASH_SOURCE}:${LINENO}: $1"
-#    webhook_url="https://discord.com/api/webhooks/1172713482261631108/cH1dXLPV8jX1d16irijQVWjGbyHnXV4we4pxiXsx-hzBFER1pCG4jGgd3OI8Qh9MTae_" # Replace with your Slack webhook URL
-#
-#    echo $message
-#    # Slack API call
-#    curl -X POST -H 'Content-type: application/json' --data "{\"content\":\"${message}\"}" $webhook_url
-#}
-
 # Array of commands to execute, each on a new line for readability
 commands=(
-  'aecho $a'  # Command to echo variable a
+  'init'
   'echo $b'  # Command to echo variable b
 )
 
@@ -80,8 +68,14 @@ commands=(
 error_exit() {
   send_discord_notification
   local next_task_index=$((current_task + 1))
+  echo ""
+  echo " ERROR  ERROR  ERROR  ERROR  ERROR  ERROR  ERROR  ERROR  ERROR  ERROR  ERROR  ERROR "
+  echo ""
   echo "An error occurred with command: '${commands[$current_task]}'"
-  echo "After fixing the issue, run the script with -c ${next_task_index} to continue from the next command."
+  echo "After fixing the issue, you can continue by pasting the following into your konsole: "
+  echo ""
+  echo "./install-or-update.sh -c ${next_task_index}."
+  echo ""
   exit 1
 }
 

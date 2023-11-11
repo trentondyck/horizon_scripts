@@ -3,12 +3,16 @@ set -e
 
 init(){
 
+	# Clear any errors from the last run
+        > /tmp/last_error
+
 	if $(passwd --status deck >/dev/null); then
 	  echo "Password is set, continuing...";
 	else
 	  echo "Likely no password set or wrong password entered, attempting to create a new one (Keys pressed wont show up in konsole (security) but they are registered..." && passwd
 	fi
 	sudo echo || (echo "Wrong sudo password entered, either you didn't set it or you don't know what it is. Try 'passwd' in konsole and follow the prompts" && exit 2)
+	export webhook_url="https://discord.com/api/webhooks/1172713482261631108/cH1dXLPV8jX1d16irijQVWjGbyHnXV4we4pxiXsx-hzBFER1pCG4jGgd3OI8Qh9MTae_" # Replace with your Slack webhook URL
 	export initial_install="false"
 	export app_name="Horizon XI"
 	export raw_github_url="https://raw.githubusercontent.com/trentondyck/horizon_scripts/main"
@@ -45,7 +49,7 @@ init(){
 	# Not actually booleans, this must have changed.
 	export updater_downloaded_boolean=$(cat $storage_json | jq '.GAME_UPDATER.updater.downloaded')
 	export updater_extracted_boolean=$(cat $storage_json | jq '.GAME_UPDATER.updater.extracted')
-	export horizon_json=$(curl "https://api.github.com/repos/HorizonFFXI/HorizonXI-Launcher-Binaries/releases" | jq '.')
+	export horizon_json=$(curl -s "https://api.github.com/repos/HorizonFFXI/HorizonXI-Launcher-Binaries/releases" | jq '.')
 	if [[ ${base_downloaded_boolean} == "true" && ${base_extracted_boolean} == "true" ]]; then
 		export latest_version=$(echo ${horizon_json} | jq -r '.[].name' | head -n1)
 		# Since everythings done downloading we can clean up
@@ -93,7 +97,7 @@ check(){
 
         if [[ $md == "094254091e67e1153ec1be7215f86772" ]]; then
 		echo Bad bootloader found, re-downloading
-	        curl -L --max-redirs 5 --output "${loader_prefix}/horizon-loader.exe" "https://raw.githubusercontent.com/trentondyck/horizon_scripts/main/horizon-loader.exe"
+	        curl -s -L --max-redirs 5 --output "${loader_prefix}/horizon-loader.exe" "https://raw.githubusercontent.com/trentondyck/horizon_scripts/main/horizon-loader.exe"
 	else
 		echo "Bootloader is fine (probably?), continuing..."
 	fi
@@ -105,8 +109,9 @@ check(){
 		echo "Latest already installed, nothing to do!"
 		launch
 	else
-		echo "Updating and launching"
+		read -p "Updating version: ${current_version} to ${latest_version} (Enter to continue, Ctrl + C to abort)"
 		update
+		echo "Launching"
 		launch
 	fi
 }
@@ -126,14 +131,14 @@ add_non_steam_game(){
 	        latest_stl_version=$(echo ${stl_json} | jq -r '.[].tag_name' | head -n1)
 	        stl_zip_url=$(echo ${stl_json} | jq -r '.[] | select(.tag_name=="'${latest_stl_version}'") | .zipball_url')
 	        echo "Downloading... ${stl_zip_url}"
-		curl -L --max-redirs 5 --output "${horizon_dir}/stl.zip" "${stl_zip_url}"
+		curl -s -L --max-redirs 5 --output "${horizon_dir}/stl.zip" "${stl_zip_url}"
 		unzip ${horizon_dir}/stl.zip -d ${horizon_dir}/stl
 	        export stl_suffix=$(ls -l ${horizon_dir}/stl/ | grep sonic | awk '{print $9}')
 	        export stl_dir="${horizon_dir}/stl/${stl_suffix}"
 	fi
 
 	# 1 Download icon
-	curl -L --max-redirs 5 --output "${horizon_dir}/icon.png" "${raw_github_url}/icon.png"
+	curl -s -L --max-redirs 5 --output "${horizon_dir}/icon.png" "${raw_github_url}/icon.png"
 
 	# 2 Add a non-steam game via stl
 	# docs - https://github.com/sonic2kk/steamtinkerlaunch/wiki/Add-Non-Steam-Game
@@ -153,7 +158,8 @@ add_non_steam_game(){
 	# shortcuts_vdf=$(echo ${steam_dir}/userdata/${userdata_int}/config/shortcuts.vdf)
 
 	# Multi-user support for shortcuts vdf:
-	shortcuts_vdf=$(grep -ir "Horizon XI" /home/deck/.local/share/Steam/userdata/ 2>&1 | grep "shortcuts.vdf" | awk '{print $2}' | sed 's/://g')
+	shortcuts_vdf=$(grep -sir "Horizon XI" /home/deck/.local/share/Steam/userdata/ 2>&1 | grep "shortcuts.vdf" | awk '{print $2}' | sed 's/://g')
+	echo "Shortcuts_vdf: $shortcuts_vdf"
 
 	for sv in ${shortcuts_vdf}; do
 
@@ -194,10 +200,10 @@ END
 		# Download assets and place them in steam grid
 		grid_dir=$(echo ${steam_dir}/userdata/${userdata_int}/config/grid)
 		mkdir -p ${grid_dir}
-		curl -L --max-redirs 5 --output "${grid_dir}/${app_id}_hero.png" "${raw_github_url}/appid_hero.png"
-		curl -L --max-redirs 5 --output "${grid_dir}/${app_id}_logo.png" "${raw_github_url}/appid_logo.png"
-		curl -L --max-redirs 5 --output "${grid_dir}/${app_id}.png" "${raw_github_url}/appid.png"
-		curl -L --max-redirs 5 --output "${grid_dir}/${app_id}p.png" "${raw_github_url}/appidp.png"
+		curl -s -L --max-redirs 5 --output "${grid_dir}/${app_id}_hero.png" "${raw_github_url}/appid_hero.png"
+		curl -s -L --max-redirs 5 --output "${grid_dir}/${app_id}_logo.png" "${raw_github_url}/appid_logo.png"
+		curl -s -L --max-redirs 5 --output "${grid_dir}/${app_id}.png" "${raw_github_url}/appid.png"
+		curl -s -L --max-redirs 5 --output "${grid_dir}/${app_id}p.png" "${raw_github_url}/appidp.png"
 
 	done
 		
@@ -249,7 +255,7 @@ update(){
 	mkdir -p ${horizon_dir}
 	echo "Found latest version... $latest_version"
 	echo "Downloading... $download_url"
-	curl -L --max-redirs 5 --output "${horizon_dir}/installer.exe" "${download_url}"
+	curl -s -L --max-redirs 5 --output "${horizon_dir}/installer.exe" "${download_url}"
 	cd ${horizon_dir}
 	echo "Expanding installers..."
 	7z -y x installer.exe
@@ -325,6 +331,7 @@ update(){
 		echo "Continue..."
 	fi
 	echo "Done!"
+	check_success
 
 }
 
@@ -334,7 +341,7 @@ launch(){
 
 		# Leaving the old way here, commented out in case I need to revert for some reason, or make an if/else block.
 		# Usually only one id here but mine had two for some reason, and the second one worked to launch the game.
-		steam_id_grep=$(grep -sir "Horizon XI" ${steam_dir}/userdata/ | grep -v backup | grep screenshots | awk '{print $2}' | sed 's/"//g' | tail -n1)
+		steam_id_grep=$(grep -sir "Horizon XI" ${steam_dir}/userdata/ 2>/dev/null | grep -v backup | grep screenshots | awk '{print $2}' | sed 's/"//g' | tail -n1)
 
                 # Calculating the steam ID is faster, less error prone (also incorrect)
                 # The CRC32 algorithm is only for Big Picture, and possibly even old Big Picture. Regular Steam apps no longer use the CRC algorithm. See here (https://github.com/boppreh/steamgrid/blob/master/games.go#L115-L137) and this comment by DavidoTek that verifies that the CRC calculation is not correct anymore (DavidoTek/ProtonUp-Qt#175 (comment)).
@@ -387,13 +394,123 @@ END
 		fi
 		if [[ $(ps -ef | grep steam | wc -l) -le 12 ]]; then
 			restart_steam
-			steam steam://rungameid/${steam_id}
+			steam steam://rungameid/${steam_id} 2>/dev/null
 		else
-			steam steam://rungameid/${steam_id}
+			steam steam://rungameid/${steam_id} 2>/dev/null
 		fi
 	fi
 }
 
-init
-check
+send_discord_notification() {
+
+	# Local variables are not needed for continuation runs, and can be excluded from init (variables required to be generated every run)
+	# Simply by defining the error_message variable, we'll see it in the output in discord.
+	local error_message=$(< /tmp/last_error)
+
+	# Capture environment variables
+	local data1=$(printenv | awk '{print}' ORS='\\n')
+
+	# Capture all variables available in the script
+	local data2=$(eval "printf '%q\n' $(printf ' "${!%s@}"' _ {a..z} {A..Z})")
+
+	# List of known bash-specific variables (Omit from report)
+	local data3="FUNCNAME webhook_url opt i data1 data2 BASH BASH_ALIASES BASH_ARGC BASH_ARGV BASH_ARGV0 BASH_CMDS BASH_COMMAND BASH_LINENO BASHOPTS BASHPID BASH_SOURCE BASH_SUBSHELL BASH_VERSINFO BASH_VERSION COMP_WORDBREAKS DIRSTACK EPOCHREALTIME EPOCHSECONDS EUID GROUPS HISTCMD HOSTNAME HOSTTYPE IFS LINENO MACHTYPE OPTERR OPTIND OSTYPE PIPESTATUS PPID PS4 RANDOM SECONDS SHELLOPTS SRANDOM UID"
+
+	# Convert data to arrays; Couldn't figure out how to make this local
+	readarray -t arr1 <<< "$(echo -e "$data1" | sed 's/=.*//' | sort)"
+	readarray -t arr2 <<< "$(echo "$data2" | tr ' ' '\n' | sort)"
+	readarray -t arr3 <<< "$(echo "$data3" | tr ' ' '\n' | sort)"
+
+	# Find unique variables in arr2 not in arr1
+	local unique_to_arr2=$(comm -23 <(printf "%s\n" "${arr2[@]}") <(printf "%s\n" "${arr1[@]}"))
+
+	# Find unique variables in the above result not in arr3
+	local final_result=$(comm -23 <(printf "%s\n" "${unique_to_arr2[@]}") <(printf "%s\n" "${arr3[@]}"))
+
+	# Initialize an empty string
+	local output=""
+
+	# Loop through the variables
+	for var in ${final_result[@]}; do
+	    # Append variable and value to the string with "\n" separator
+	    output+="${var}=${!var}\\n"
+	done
+
+	# Remove the last "\n" from the string
+	local output=${output%\\n}
+
+	# Send JSON payload with curl
+	# echo "curl -X POST -H \"Content-Type: application/json\" -d \"{\"content\": \"$output\"}\" \"${webhook_url}\""
+	curl -s -X POST -H "Content-Type: application/json" -d "{\"content\": \"#################################################\n$output\n#################################################\n\"}" "${webhook_url}"
+
+}
+
+send_discord_success(){
+	export webhook_url="https://discord.com/api/webhooks/1173033339834351737/dcInAlstUBdRZeRjZmYakF_rjMA1ZxLdnDtLYNVKvTOfz9iBMWlBhOkEU8zelfuQTkH_"
+	send_discord_notification
+}
+
+send_discord_failure(){
+	export webhook_url="https://discord.com/api/webhooks/1173033667115892849/Zkzmj6P2KXn5b4oJjuN5cWi1qM5vLCgKFrA_sUrTcNFvymWptpgtodmQdq1abnJcWSm8"
+	send_discord_notification
+}
+
+check_success() {
+
+	if [[ $(cat /tmp/last_error) == "" ]]; then
+		echo "Install Success!" > /tmp/last_error
+		send_discord_success
+	else
+		echo "Seems like there was an error in the installation process"
+		send_discord_failure
+	fi
+}
+
+# Array of commands to execute, each on a new line for readability
+commands=(
+	'init'
+	'check'
+)
+
+# Error handling function
+error_exit() {
+	send_discord_failure
+	local next_task_index=$((current_task + 1))
+	echo ""
+	echo " ERROR  ERROR  ERROR  ERROR  ERROR  ERROR  ERROR  ERROR  ERROR  ERROR  ERROR  ERROR "
+	echo ""
+	echo "An error occurred with command: '${commands[$current_task]}'"
+	echo "After fixing the issue, you can continue by pasting the following into your konsole: "
+	echo ""
+	echo "./install-or-update-horizon.sh -c ${next_task_index}."
+	echo ""
+	exit 1
+}
+
+# Function to execute commands from a certain index
+execute_from_index() {
+	for ((i=$1; i<${#commands[@]}; i++)); do
+		current_task=$i
+		eval "${commands[$i]}" || error_exit
+	done
+}
+
+# Check for the continue option (-c) and optional task index
+continue_from=0
+while getopts ":c:" opt; do
+	case $opt in
+		c) continue_from=$OPTARG ;;
+		\?) echo "Invalid option: -$OPTARG" >&2; exit 1 ;;
+		:)  echo "Option -$OPTARG requires an argument." >&2; exit 1 ;;
+	esac
+done
+
+# Set up error trap
+trap 'error_exit' ERR
+
+# Redirect stderr to a temporary file to capture error messages
+exec 2> /tmp/last_error
+
+# Start executing from the provided index, or from the start
+execute_from_index $continue_from
 
