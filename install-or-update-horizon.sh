@@ -109,7 +109,7 @@ check(){
 		echo "Latest already installed, nothing to do!"
 		launch
 	else
-		read -p "Updating version: ${current_version} to ${latest_version} (Enter to continue, Ctrl + C to abort)"
+		read -p "Updating version: ${current_version} to ${latest_version} (Enter to continue, Ctrl + C to abort)" continue_option
 		update
 		echo "Launching"
 		launch
@@ -251,6 +251,7 @@ restart_steam(){
 
 update(){
 
+	read -p "Whats your discord name (useful in case something goes wrong for debugging, press enter to ignore)?" discord_name
 	echo "Creating required directories..."
 	mkdir -p ${horizon_dir}
 	echo "Found latest version... $latest_version"
