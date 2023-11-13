@@ -13,11 +13,17 @@ uninstall_init(){
 	sudo echo || (echo "Wrong sudo password entered, either you didn't set it or you don't know what it is. Try 'passwd' in konsole and follow the prompts" && exit 2)
 
 	if [[ -d /run/media/mmcblk0p1/steamapps/compatdata/ ]]; then
+		echo "Found a SD card, lets check if we can find an install there"
 		if [[ $(sudo find /run/media/mmcblk0p1/steamapps/compatdata/ -name config.json -type f | grep HorizonXI) ]]; then
 			echo "Media based install"
 			export config_json=$(sudo find /run/media/mmcblk0p1/steamapps/compatdata/ -name config.json -type f | grep HorizonXI)
+		else
+			echo "Couldn't find config json in the SD card"
+	                export config_json=$(sudo find /home/deck/.local/share/Steam/steamapps/compatdata/ -name config.json -type f | grep HorizonXI)
 		fi
+
 	else
+		echo "No SD card found"
 		if [[ $(sudo find /home/deck/.local/share/Steam/steamapps/compatdata/ -name config.json -type f | grep HorizonXI) ]]; then
 			echo "Deck based install"
 			export config_json=$(sudo find /home/deck/.local/share/Steam/steamapps/compatdata/ -name config.json -type f | grep HorizonXI)
@@ -27,7 +33,9 @@ uninstall_init(){
 		fi
 	fi
 
+		echo "config_json: $config_json"
 	        steam_id_grep=$(grep -sir "Horizon XI" ${steam_dir}/userdata/ | grep -v backup | grep screenshots | awk '{print $2}' | sed 's/"//g')
+		echo "steam_id_grep: $steam_id_grep"
 
 		# Calculating the steam ID is faster, less error prone (also incorrect)
 		# The CRC32 algorithm is only for Big Picture, and possibly even old Big Picture. Regular Steam apps no longer use the CRC algorithm. See here (https://github.com/boppreh/steamgrid/blob/master/games.go#L115-L137) and this comment by DavidoTek that verifies that the CRC calculation is not correct anymore (DavidoTek/ProtonUp-Qt#175 (comment)).
