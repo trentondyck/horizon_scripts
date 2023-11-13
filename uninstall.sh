@@ -4,6 +4,7 @@ uninstall_init(){
 
 	> /tmp/last_error
 
+	read -p "Starting uninstall process... continue? (ctrl +c to abort, enter to continue)" continue_var
 	if $(passwd --status deck >/dev/null); then
 	  echo "Password is set, continuing...";
 	else
@@ -74,6 +75,7 @@ END
                                 export steam_id=${steam_id_grep}
                         fi
                 fi
+		check_success
 
 }
 
@@ -167,10 +169,10 @@ send_discord_failure(){
 check_success() {
 
 	if [[ $(cat /tmp/last_error) == "" ]]; then
-		echo "Install Success!" > /tmp/last_error
+		echo "Uninstall Success!" > /tmp/last_error
 		send_discord_success
 	else
-		echo "Seems like there was an error in the installation process"
+		echo "Seems like there was an error in the uninstallation process"
 		send_discord_failure
 	fi
 }
