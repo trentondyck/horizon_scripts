@@ -1,10 +1,30 @@
 #!/bin/bash
+set -e
+
+capture(){
+# Save the original stderr
+exec 3>&2
+
+# Redirect stderr to a file
+exec 2> /tmp/last_error
+}
+
+allow(){
+# Restore stderr to its original state
+exec 2>&3
+
+# Close the temporary file descriptor
+exec 3>&-
+}
 
 uninstall_init(){
 
 	> /tmp/last_error
 
-	read -p "Starting uninstall process... continue? (ctrl +c to abort, enter to continue)" continue_var
+	allow
+	read -p "Starting uninstall process... continue? (ctrl +c to abort, enter to continue)" somevar
+	capture
+
 	if $(passwd --status deck >/dev/null); then
 	  echo "Password is set, continuing...";
 	else
@@ -224,11 +244,11 @@ while getopts ":c:" opt; do
 	esac
 done
 
+
 # Set up error trap
 trap 'error_exit' ERR
 
-# Redirect stderr to a temporary file to capture error messages
-exec 2> /tmp/last_error
+capture
 
 # Start executing from the provided index, or from the start
 execute_from_index $continue_from

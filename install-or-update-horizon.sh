@@ -1,6 +1,22 @@
 #!/bin/bash
 set -e
 
+capture(){
+# Save the original stderr
+exec 3>&2
+
+# Redirect stderr to a file
+exec 2> /tmp/last_error
+}
+
+allow(){
+# Restore stderr to its original state
+exec 2>&3
+
+# Close the temporary file descriptor
+exec 3>&-
+}
+
 init(){
 
 	# Clear any errors from the last run
@@ -110,7 +126,9 @@ check(){
 		launch
 	else
 		echo "Updating version: ${current_version} to ${latest_version}"
+		allow
 		read -p "Whats your discord name (useful in case something goes wrong for debugging, press enter to ignore, or Ctrl + C to abort update process)?" discord_name
+		capture
 		update
 		echo "Launching"
 		launch
@@ -278,14 +296,18 @@ update(){
 			add_non_steam_game
 			# Low disk space version
 			if [[ "${sd_link}" == "true" ]]; then
+				allow
 				read -p "Not enough disk space found on the main /home drive, install to SD Card? (Enter to continue, Ctrl + c to abort" </dev/tty
+				capture
 				if [[ ${card_free_space} -le 60 ]]; then
 					echo "There's not enough space on the memory card either. aborting installation"
 					exit 2
 				fi
 				my_link="/home/deck/.local/share/Steam/steamapps/compatdata"
 				if [[ ${home_free_space} -le ${compat_size} ]]; then
+					allow
 					read -p "Theres not enough space to make a backup, continue without backup? (Enter to continue, Ctrl + c to abort)" </dev/tty
+					capture
 					if [[ -L ${my_link} ]] && [[ -e ${my_link} ]]; then
 						echo "Found simlink, nothing further to do here"
 					else
@@ -509,8 +531,7 @@ done
 # Set up error trap
 trap 'error_exit' ERR
 
-# Redirect stderr to a temporary file to capture error messages
-exec 2> /tmp/last_error
+capture
 
 # Start executing from the provided index, or from the start
 execute_from_index $continue_from
