@@ -485,6 +485,7 @@ check_success() {
 		send_discord_success
 	else
 		echo "Seems like there was an error in the installation process"
+		cat /tmp/last_error
 		send_discord_failure
 	fi
 }
