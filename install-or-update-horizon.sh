@@ -270,7 +270,7 @@ restart_steam(){
 
 update(){
 
-	echo "Creating required directories..."
+	echo "Creating required directories... ${horizon_dir} ..."
 	mkdir -p ${horizon_dir}
 	echo "Found latest version... $latest_version"
 	echo "Downloading... $download_url"
@@ -483,6 +483,10 @@ send_discord_failure(){
 }
 
 check_success() {
+
+	# Trying to make sure this variable shows up, seems to have been missed somehow. maybe we can put critical variables here. time will tell.
+        export horizon_dir="/home/deck/horizon-xi"
+        export current_debug=$(<${horizon_dir}/current_version)
 
 	if [[ $(cat /tmp/last_error) == "" ]]; then
 		echo "Install Success!" > /tmp/last_error
