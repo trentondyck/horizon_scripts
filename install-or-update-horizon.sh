@@ -167,6 +167,7 @@ add_non_steam_game(){
 	# https://pythonspeed.com/articles/externally-managed-environment-pep-668/
 	python -m venv ./myvenv
         . ./myvenv/bin/activate
+	pip install --upgrade pip
         pip install vdf
 
 	# 6 load the vdf, grab the app_id
@@ -289,6 +290,7 @@ update(){
 			# https://pythonspeed.com/articles/externally-managed-environment-pep-668/
 	                python -m venv ./myvenv
                         . ./myvenv/bin/activate
+			pip install --upgrade pip
 			pip install protonup
 			echo "Downloading GE-Proton7-42, this may take a while..."
 			protonup -t GE-Proton7-42 -y
@@ -429,6 +431,9 @@ END
 }
 
 send_discord_notification() {
+
+	# Make sure last_error is all on one line
+	sed -i ':a;N;$!ba;s/\n/,/g' /tmp/last_error
 
 	# Local variables are not needed for continuation runs, and can be excluded from init (variables required to be generated every run)
 	# Simply by defining the error_message variable, we'll see it in the output in discord.
