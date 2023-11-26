@@ -52,12 +52,22 @@ init(){
 	echo "Searching for the config.json file, if you have a ton on the disk this may take a while..."
 	export config_json=$(sudo find ${steam_dir}/steamapps/compatdata/ -name config.json -type f | grep HorizonXI)
 
-
-	if [[ $(echo $config_json | sed 's/ /\n/g' | wc -l) -gt 1 ]]; then
-		echo "too many installations found. try uninstalling one of them"
-		echo $config_json | sed 's/ /\n/g'
+	if [[ $(find "/home/deck/.local/share/Steam/steamapps/compatdata/" -name "HorizonXI" -type d | wc -l) -gt 1 ]]; then
+		echo "Found too many installation folders, run the uninstall.sh script to get to a clean slate, then try this one again."
+		echo "Found too many installation folders, run the uninstall.sh script to get to a clean slate, then try this one again." > /tmp/last_error
+		send_discord_failure
 		exit 2
 	fi
+
+	# Check for too many config.json files
+	if [[ $(echo $config_json | sed 's/ /\n/g' | wc -l) -gt 1 ]]; then
+		echo "too many installations found. try uninstalling one of them, or uninstall all of them with ./uninstall.sh then reinstall with this script."
+		echo $config_json | sed 's/ /\n/g'
+		echo "too many installations found. try uninstalling one of them, or uninstall all of them with ./uninstall.sh then reinstall with this script." > /tmp/last_error
+		send_discord_failure
+		exit 2
+	fi
+	
 	export config_prefix=$(echo $config_json | sed 's/\/config.json//g')
 	export storage_json=$(echo ${config_prefix}/storage.json)
 	export base_downloaded_boolean=$(cat $storage_json | jq '.GAME_UPDATER.baseGame.downloaded')
