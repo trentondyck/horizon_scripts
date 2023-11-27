@@ -407,7 +407,7 @@ END
 		if [[ ${steam_id_grep} == "" ]]; then
 			if [[ ${legacy_steam_id} == "" ]]; then
 				if [[ ${new_steam_id} == "" ]]; then
-					echo "All methods to find a steam ID failed. Please seek further guidance or debug manually"
+					echo "All methods to find a steam ID failed. Maybe just try running it from steam? Launching from commandline failed."
 					if [[ $(cat /tmp/last_error) == "" ]]; then
 						echo "All methods to find a steam ID failed. a" > /tmp/last_error
 					elif [[ $(cat /tmp/last_error) == "Install Success!" ]]; then
@@ -495,6 +495,12 @@ send_discord_success(){
 }
 
 send_discord_failure(){
+	echo "There seems to have been an issue with your installation or launching of Horizon. If your installation is not working,"
+	echo "Please copy the entire konsole log, visit"
+	echo "https://pastebin.com/"
+	echo "and paste it there. Then share the link in the Steam deck discord"
+        echo "https://discord.com/channels/933423693848260678/1050099981987618906"
+        echo "and tag @trent"
 	export webhook_url="https://discord.com/api/webhooks/1173033667115892849/Zkzmj6P2KXn5b4oJjuN5cWi1qM5vLCgKFrA_sUrTcNFvymWptpgtodmQdq1abnJcWSm8"
 	send_discord_notification
 }
