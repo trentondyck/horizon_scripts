@@ -409,7 +409,9 @@ END
 				if [[ ${new_steam_id} == "" ]]; then
 					echo "All methods to find a steam ID failed. Please seek further guidance or debug manually"
 					if [[ $(cat /tmp/last_error) == "" ]]; then
-						echo "All methods to find a steam ID failed. Please seek further guidance or debug manually" > /tmp/last_error
+						echo "All methods to find a steam ID failed. a" > /tmp/last_error
+					elif [[ $(cat /tmp/last_error) == "Install Success!" ]]; then
+						echo "All methods to find a steam ID failed. b" > /tmp/last_error
 					fi
 					send_discord_failure
 					exit 2
