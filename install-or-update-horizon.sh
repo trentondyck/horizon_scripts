@@ -283,6 +283,7 @@ update(){
 
 	echo "Creating required directories... ${horizon_dir} ..."
 	mkdir -p ${horizon_dir}
+	sudo chown -R deck: ${horizon_dir}
 	echo "Found latest version... $latest_version"
 	echo "Downloading... $download_url"
 	curl -s -L --max-redirs 5 --output "${horizon_dir}/installer.exe" "${download_url}"
