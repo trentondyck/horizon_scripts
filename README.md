@@ -37,5 +37,3 @@ If you already installed everything and you just want the images, run this scrip
 ./images_only.sh
 ```
 
-#### Support
-Send gil to Fatso if you want to support the author
