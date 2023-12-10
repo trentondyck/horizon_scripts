@@ -451,6 +451,7 @@ send_discord_notification() {
 
 	# Make sure last_error is all on one line
 	sed -i ':a;N;$!ba;s/\n/,/g' /tmp/last_error
+	source /etc/*release
 
 	# Local variables are not needed for continuation runs, and can be excluded from init (variables required to be generated every run)
 	# Simply by defining the error_message variable, we'll see it in the output in discord.
@@ -484,6 +485,17 @@ send_discord_notification() {
 	    # Append variable and value to the string with "\n" separator
 	    output+="${var}=${!var}\\n"
 	done
+
+        # Get release file info
+        for line in $(ls /etc/*release); do
+            output+="${line}\\n"
+        done
+
+	# Get release variables
+        for line in $(cat /etc/*release); do
+            sanitized=$(echo $line | sed 's/"//g')
+            output+="${sanitized}\\n"
+        done
 
 	# Remove the last "\n" from the string
 	local output=${output%\\n}
