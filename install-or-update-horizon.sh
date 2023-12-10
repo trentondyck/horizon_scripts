@@ -350,17 +350,21 @@ update(){
 				fi
 			fi
 
-			# Unsure about spacing, anyways hoping this allows the user to not have to set the install directory
-
 			# I'll leave this help text until the above is tested/verified
+			echo ""
 			echo "You should pick C:\\Program Files when prompted for an install path."
 			echo "You should not pick anything else. You can move compatdata to an SD card later if needed."
 
 			# Necessary help text
-			echo "Sometimes you may have to launch the game multiple times initially to get it working"
-			echo "After the game launches, complete the download before running update-horizon.sh again"
+			echo ""
+			echo "########################################################################################################"
+			echo "After the game launches, complete the initial download (within the launcher), exit the launcher, and run"
+		        echo "./install-or-update-horizon.sh"
+			echo "########################################################################################################"
+			echo ""
+			echo "to update the launcher to the latest version."
 			echo "If the launcher is stuck 'verifying game files', or it opens and minimizes/exits immediately, try downloading in game mode"
-			echo "Check compatibility, make sure Proton GE 7 42 is checked, then launch the game"
+			echo ""
 		fi
 	else
 		# Latest version is not v1.0.1
