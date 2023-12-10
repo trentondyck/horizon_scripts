@@ -156,7 +156,7 @@ add_non_steam_game(){
 	if [[ $( which ${stl_dir}/steamtinkerlaunch 2>/dev/null ) ]]; then
 	        echo "Steam tinker launch already installed, continuing..."
 	else
-	        stl_json=$(curl "https://api.github.com/repos/sonic2kk/steamtinkerlaunch/releases")
+	        stl_json=$(curl -s "https://api.github.com/repos/sonic2kk/steamtinkerlaunch/releases")
 	        latest_stl_version=$(echo ${stl_json} | jq -r '.[].tag_name' | head -n1)
 	        stl_zip_url=$(echo ${stl_json} | jq -r '.[] | select(.tag_name=="'${latest_stl_version}'") | .zipball_url')
 	        echo "Downloading... ${stl_zip_url}"
