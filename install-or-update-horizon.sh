@@ -150,10 +150,10 @@ add_non_steam_game(){
 
 	# Source - https://github.com/sonic2kk/steamtinkerlaunch/issues/729
 	# 1 Download the latest release
-	stl_suffix=$(ls -l ${horizon_dir}/stl/ | grep sonic | awk '{print $9}')
+	stl_suffix=$(ls -l ${horizon_dir}/stl/ 2>/dev/null | grep sonic | awk '{print $9}' 2>/dev/null)
 	stl_dir="${horizon_dir}/stl/${stl_suffix}"
 
-	if [[ $( which ${stl_dir}/steamtinkerlaunch ) ]]; then
+	if [[ $( which ${stl_dir}/steamtinkerlaunch 2>/dev/null ) ]]; then
 	        echo "Steam tinker launch already installed, continuing..."
 	else
 	        stl_json=$(curl "https://api.github.com/repos/sonic2kk/steamtinkerlaunch/releases")
