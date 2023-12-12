@@ -92,11 +92,23 @@ init(){
 		current_version=$(cat ${horizon_dir}/current_version)
                 export latest_version=$(echo ${horizon_json} | jq -r '.[].name' | head -n1)
                 # Since everythings done downloading we can clean up
-                echo "Searching home directory for horizon zip, this may take a while..."
+                echo "Base and extracted not true, Searching home directory for horizon zip, this may take a while..."
                 sudo find /home -name "HorizonXI.zip" -type f | sed 's/ /\\ /g' | xargs -i rm {}
+	elif [[ -f $storage_json && "$install_path" == '""' && "$download_path" == '""' && "$updater_downloaded_boolean" == "0" && "$updater_extracted_boolean" == "0" ]]; then
+                cat $storage_json
+                echo "Found an issue with storage json config, Did you install Horizon to C:\\Program Files ?"
+                echo "If not, modify the $storage_json install_path and download_path to the correct values."
+                read -p "If you did install to C:\\Program Files, we can fix this bug, just hit enter (Ctrl + c to abort)"
+                # Kill currently running horizon process if exists
+                ps -ef | grep horizon | grep ":\\\home\\\deck\\\horizon-xi\\\lib\\\net45\\\HorizonXI-Launcher.exe$" | awk '{print $2}' | xargs -i kill {}
+                cat <<< $(jq '.paths.installPath.path = "C:\\Program Files\\HorizonXI\\Game"' "${storage_json}") > "${storage_json}"
+                cat <<< $(jq '.paths.downloadPath.path = "C:\\Program Files\\HorizonXI\\Downloads"' "${storage_json}") > "${storage_json}"
+                cat <<< $(jq '.GAME_UPDATER.updater.downloaded = 1' "${storage_json}") > "${storage_json}"
+                cat <<< $(jq '.GAME_UPDATER.updater.extracted = 1' "${storage_json}") > "${storage_json}"
 	else
 		# Let's hard code latest version to v1.0.1, since the installer isn't complete we need to download & complete the install on v1.0.1 before updating
 		# See Note: https://github.com/hilts-vaughan/hilts-vaughan.github.io/blob/master/_posts/2022-12-16-installing-horizon-xi-linux.md#install-horizonxi---steam-play-steam-deck--other-systems
+		echo "Seems like theres no storage json, hard coding to v1.0.1"
 		export latest_version="v1.0.1"
 	fi
 	export download_url=$(echo ${horizon_json} | jq -r '.[] | select(.tag_name=="'${latest_version}'") | .assets[] | select ( .name | endswith ("exe") ) | .browser_download_url')
