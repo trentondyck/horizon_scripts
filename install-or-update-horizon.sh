@@ -352,13 +352,18 @@ update(){
 					else
 						mkdir -p "/run/media/mmcblk0p1/steamapps/compatdata"
 						if [[ -f ${steam_dir}/steamapps/compatdata ]]; then
+                                                        echo "Taking backup..."
 							cp -r ${steam_dir}/steamapps/compatdata/* /run/media/mmcblk0p1/steamapps/compatdata/
 							mv ${steam_dir}/steamapps/compatdata ${steam_dir}/steamapps/compatdata_backup
+                                                        ls ${steam_dir}/steamapps
 						else
 							mkdir -p ${steam_dir}/steamapps/
+                                                        ls ${steam_dir}/steamapps
 						fi
+                                                echo "creat8ng steamapps"
 						cd ${steam_dir}/steamapps
-						ln -s /run/media/mmcblk0p1/steamapps/compatdata
+                                                ls ${steam_dir}/steamapps
+   						ln -s /run/media/mmcblk0p1/steamapps/compatdata
 					fi
 				fi
 			fi
