@@ -338,7 +338,7 @@ update(){
 						echo "Found simlink, nothing further to do here"
 					else
 						mkdir -p "/run/media/mmcblk0p1/steamapps/compatdata"
-						if [[ -f ${steam_dir}/steamapps/compatdata ]]; then
+						if [[ -d ${steam_dir}/steamapps/compatdata ]]; then
 							cp -r ${steam_dir}/steamapps/compatdata/* /run/media/mmcblk0p1/steamapps/compatdata/
 						else
 							mkdir -p ${steam_dir}/steamapps/
@@ -351,16 +351,16 @@ update(){
 						echo "Found simlink, nothing further to do here"
 					else
 						mkdir -p "/run/media/mmcblk0p1/steamapps/compatdata"
-						if [[ -f ${steam_dir}/steamapps/compatdata ]]; then
+						if [[ -d ${steam_dir}/steamapps/compatdata ]]; then
                                                         echo "Taking backup..."
 							cp -r ${steam_dir}/steamapps/compatdata/* /run/media/mmcblk0p1/steamapps/compatdata/
 							mv ${steam_dir}/steamapps/compatdata ${steam_dir}/steamapps/compatdata_backup
                                                         ls ${steam_dir}/steamapps
 						else
+                                                	echo "creating steamapps"
 							mkdir -p ${steam_dir}/steamapps/
                                                         ls ${steam_dir}/steamapps
 						fi
-                                                echo "creat8ng steamapps"
 						cd ${steam_dir}/steamapps
                                                 ls ${steam_dir}/steamapps
    						ln -s /run/media/mmcblk0p1/steamapps/compatdata
