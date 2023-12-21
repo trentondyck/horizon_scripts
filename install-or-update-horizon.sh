@@ -40,7 +40,7 @@ init(){
 		export home_free_space=$(df -h | grep " /home$" | awk '{print $4}' | sed 's/G//g')
 		export card_free_space=$(df -h | grep "/run/media" | awk '{print $4}' | sed 's/G//g')
 		export sd_link="true"
-		if [[ -f "/run/media/mmcblk0p1/" ]]; then
+		if [[ -d "/run/media/mmcblk0p1/" ]]; then
 			echo "SD card found and formatted, continuing..."
 		else
 			echo "SD Card not formatted. Do that manually and try running the script again..."
