@@ -32,7 +32,7 @@ For any update after the first you can copy to your desktop and run it with doub
 ### Uninstallation
 
 ```
-./uninstall.sh
+(curl -L --max-redirs 5 --output ./uninstall.sh https://raw.githubusercontent.com/trentondyck/horizon_scripts/main/uninstall.sh) && chmod +x uninstall.sh && ./uninstall.sh
 ```
 
 ### Images only
