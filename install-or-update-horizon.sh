@@ -468,6 +468,8 @@ END
 send_discord_notification() {
 
 	# Make sure last_error is all on one line
+	date >> /tmp/last_error
+	echo ";;;" >> /tmp/last_error
 	sed -i ':a;N;$!ba;s/\n/,/g' /tmp/last_error
 	source /etc/*release
 

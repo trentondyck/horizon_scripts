@@ -18,7 +18,7 @@ Download this script, and run like so in konsole:
 
 Or, for the incredibly lazy, open konsole, and paste:
 ```
-(curl -L --max-redirs 5 --output ./install-or-update-horizon.sh https://raw.githubusercontent.com/trentondyck/horizon_scripts/main/install-or-update-horizon.sh) && chmod +x install-or-update-horizon.sh && ./install-or-update-horizon.sh
+(curl -s -L --max-redirs 5 --output ./install-or-update-horizon.sh https://raw.githubusercontent.com/trentondyck/horizon_scripts/main/install-or-update-horizon.sh) && chmod +x install-or-update-horizon.sh && ./install-or-update-horizon.sh
 ```
 
 - After the first installation is complete and you have installed files from the official launcher, rerun the script to upgrade to the latest:
@@ -32,7 +32,7 @@ For any update after the first you can copy to your desktop and run it with doub
 ### Uninstallation
 
 ```
-(curl -L --max-redirs 5 --output ./uninstall.sh https://raw.githubusercontent.com/trentondyck/horizon_scripts/main/uninstall.sh) && chmod +x uninstall.sh && ./uninstall.sh
+(curl -s -L --max-redirs 5 --output ./uninstall.sh https://raw.githubusercontent.com/trentondyck/horizon_scripts/main/uninstall.sh) && chmod +x uninstall.sh && ./uninstall.sh
 ```
 
 ### Images only
