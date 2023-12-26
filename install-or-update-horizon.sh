@@ -266,7 +266,7 @@ if not 'CompatToolMapping' in d['InstallConfigStore']['Software']['Valve']['Stea
   d['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping']={}
 
 ctm = d['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping']
-ctm['${app_id}']={ 'name': 'GE-Proton7-42', 'config': '', 'priority': '250' }
+ctm['${app_id}']={ 'name': 'GE-Proton8-25', 'config': '', 'priority': '250' }
 vdf.dump(d, open('${horizon_dir}/config.vdf','w'), pretty=True)
 
 END
@@ -310,14 +310,14 @@ update(){
 		if [[ $(ps -ef | grep steam | wc -l) -le 12 ]]; then
 			restart_steam
 		else
-			# Install GE-Proton7-42, known to work with Horizon. Later versions can be found via `/home/deck/.local/bin/protonup --releases`
+			# Install GE-Proton8-25, known to work with Horizon. Later versions can be found via `/home/deck/.local/bin/protonup --releases`
 			# https://pythonspeed.com/articles/externally-managed-environment-pep-668/
 	                python -m venv ./myvenv
                         . ./myvenv/bin/activate
 			pip install --upgrade pip
 			pip install protonup
-			echo "Downloading GE-Proton7-42, this may take a while..."
-			protonup -t GE-Proton7-42 -y
+			echo "Downloading GE-Proton8-25, this may take a while..."
+			protonup -t GE-Proton8-25 -y
 			restart_steam
 			add_non_steam_game
 			# Low disk space version
