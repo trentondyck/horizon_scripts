@@ -96,8 +96,8 @@ init(){
                 echo "Base and extracted not true, Searching home directory for horizon zip, this may take a while..."
                 sudo find /home -name "HorizonXI.zip" -type f | sed 's/ /\\ /g' | xargs -i rm {}
 	elif [[ -f $storage_json && "$install_path" == '""' && "$download_path" == '""' && "$updater_downloaded_boolean" == "0" && "$updater_extracted_boolean" == "0" ]]; then
-                cat $storage_json
                 echo "Found an issue with storage json config, Did you install Horizon to C:\\Program Files ?"
+                cat $storage_json
                 echo "If not, modify the $storage_json install_path and download_path to the correct values."
                 read -p "If you did install to C:\\Program Files, we can fix this bug, just hit enter (Ctrl + c to abort)"
                 # Kill currently running horizon process if exists
@@ -114,7 +114,9 @@ init(){
 	fi
 	export download_url=$(echo ${horizon_json} | jq -r '.[] | select(.tag_name=="'${latest_version}'") | .assets[] | select ( .name | endswith ("exe") ) | .browser_download_url')
 	export nupkg_name=$(echo ${horizon_json} | jq -r '.[] | select(.tag_name=="'${latest_version}'") | .assets[] | select ( .name | endswith ("nupkg") ) | .name ')
+	echo "config_json: $config_json"
 	echo "storage_json: $storage_json"
+	cat "${storage_json}"
 	echo "latest_version: $latest_version"
 	echo "current_version: $current_version"
 }
@@ -256,6 +258,8 @@ END
 	# Before modifying config.vdf Steam needs to be closed. See https://github.com/sonic2kk/steamtinkerlaunch/pull/908#issuecomment-1722569450
         killall steam
 	config_vdf=${steam_dir}/config/config.vdf
+	echo "Config VDF before adding $app_id"
+	cat $config_vdf
 	cp -f ${config_vdf} ${horizon_dir}/bak.config_vdf
 	# Documentation - https://github.com/ValvePython/vdf
 	echo "Installing Proton layer to ${config_vdf}"
@@ -276,6 +280,8 @@ END
 
 	cp -f ${horizon_dir}/config.vdf ${config_vdf}
 	echo "Should have copied ${horizon_dir}/config.vdf to $config_vdf"
+	echo "Config VDF after adding $app_id"
+	cat $config_vdf
 
 	restart_steam
 	echo "Successfully added nonsteam game"
