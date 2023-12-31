@@ -150,7 +150,10 @@ check(){
 	else
 		echo "Updating version: ${current_version} to ${latest_version}"
 		allow
-		read -p "Whats your discord name (useful in case something goes wrong for debugging, press enter to ignore, or Ctrl + C to abort update process)?" discord_name
+		read -p "Whats your discord name (useful in case something goes wrong for debugging, required. Ctrl + C to abort update process)?" discord_name
+		if [[ "discord_name" == "" ]]; then
+			exit 2
+		fi
 		capture
 		update
 		echo "Launching"
@@ -516,6 +519,9 @@ send_discord_notification() {
             sanitized=$(echo $line | sed 's/"//g')
             output+="${sanitized}\\n"
         done
+
+        log_out=$(curl -s --data-binary @log.out https://paste.rs/)
+        output+="${log_out}\\n"
 
 	# Remove the last "\n" from the string
 	local output=${output%\\n}
