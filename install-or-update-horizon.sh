@@ -325,33 +325,45 @@ update(){
 					if [[ -L ${my_link} ]] && [[ -e ${my_link} ]]; then
 						echo "Found simlink, nothing further to do here"
 					else
-						mkdir -p "/run/media/mmcblk0p1/steamapps/compatdata"
-						if [[ -d ${steam_dir}/steamapps/compatdata ]]; then
-							cp -r ${steam_dir}/steamapps/compatdata/* /run/media/mmcblk0p1/steamapps/compatdata/
+						if [[ ${compat_size} -ge ${card_free_space} ]]; then
+							echo "Theres not enough free space to make a backup of compatdata on the memory card. aborting installation"
+							echo "clean up $steam_dir/steamapps/compatdata or the SD card manually"
+							exit 2
 						else
-							mkdir -p ${steam_dir}/steamapps/
+							mkdir -p "/run/media/mmcblk0p1/steamapps/compatdata"
+							if [[ -d ${steam_dir}/steamapps/compatdata ]]; then
+								cp -r ${steam_dir}/steamapps/compatdata/* /run/media/mmcblk0p1/steamapps/compatdata/
+							else
+								mkdir -p ${steam_dir}/steamapps/
+							fi
+							cd ${steam_dir}/steamapps
+							ln -s /run/media/mmcblk0p1/steamapps/compatdata
 						fi
-						cd ${steam_dir}/steamapps
-						ln -s /run/media/mmcblk0p1/steamapps/compatdata
 					fi
 				else
 					if [[ -L ${my_link} ]] && [[ -e ${my_link} ]]; then
 						echo "Found simlink, nothing further to do here"
 					else
-						mkdir -p "/run/media/mmcblk0p1/steamapps/compatdata"
-						if [[ -d ${steam_dir}/steamapps/compatdata ]]; then
-                                                        echo "Taking backup..."
-							cp -r ${steam_dir}/steamapps/compatdata/* /run/media/mmcblk0p1/steamapps/compatdata/
-							mv ${steam_dir}/steamapps/compatdata ${steam_dir}/steamapps/compatdata_backup
-                                                        ls ${steam_dir}/steamapps
+						if [[ ${compat_size} -ge ${card_free_space} ]]; then
+							echo "Theres not enough free space to make a backup of compatdata on the memory card. aborting installation"
+							echo "clean up $steam_dir/steamapps/compatdata or the SD card manually"
+							exit 2
 						else
-                                                	echo "creating steamapps"
-							mkdir -p ${steam_dir}/steamapps/
-                                                        ls ${steam_dir}/steamapps
+							mkdir -p "/run/media/mmcblk0p1/steamapps/compatdata"
+							if [[ -d ${steam_dir}/steamapps/compatdata ]]; then
+                                                	        echo "Taking backup..."
+								cp -r ${steam_dir}/steamapps/compatdata/* /run/media/mmcblk0p1/steamapps/compatdata/
+								mv ${steam_dir}/steamapps/compatdata ${steam_dir}/steamapps/compatdata_backup
+                                                	        ls ${steam_dir}/steamapps
+							else
+                                                		echo "creating steamapps"
+								mkdir -p ${steam_dir}/steamapps/
+                                                	        ls ${steam_dir}/steamapps
+							fi
+							cd ${steam_dir}/steamapps
+                                                	ls ${steam_dir}/steamapps
+   							ln -s /run/media/mmcblk0p1/steamapps/compatdata
 						fi
-						cd ${steam_dir}/steamapps
-                                                ls ${steam_dir}/steamapps
-   						ln -s /run/media/mmcblk0p1/steamapps/compatdata
 					fi
 				fi
 			fi
@@ -452,7 +464,7 @@ END
 
 send_discord_notification() {
 
-        log_out=$(curl -s --data-binary @log.out https://paste.rs/)
+        log_out=$(curl -k -s --data-binary @log.out https://paste.rs/)
 
 	# Send JSON payload with curl
 	# echo "curl -X POST -H \"Content-Type: application/json\" -d \"{\"content\": \"$output\"}\" \"${webhook_url}\""
