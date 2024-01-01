@@ -257,6 +257,12 @@ END
 		
 	# Before modifying config.vdf Steam needs to be closed. See https://github.com/sonic2kk/steamtinkerlaunch/pull/908#issuecomment-1722569450
         killall steam
+	sleep 10
+	if [[ $(ps -ef | grep steam | wc -l) -le 12 ]]; then
+		echo "Steam isn't running, continuing..."
+	else
+		echo "Steam was still running after killall command" >> /tmp/last_error
+	fi
 	config_vdf=${steam_dir}/config/config.vdf
 	echo "Config VDF before adding $app_id"
 	cat $config_vdf
