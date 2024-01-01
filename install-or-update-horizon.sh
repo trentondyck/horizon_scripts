@@ -1,26 +1,7 @@
 #!/bin/bash
 set -e
 
-capture(){
-# Save the original stderr
-exec 3>&2
-
-# Redirect stderr to a file
-exec 2> /tmp/last_error
-}
-
-allow(){
-# Restore stderr to its original state
-exec 2>&3
-
-# Close the temporary file descriptor
-exec 3>&-
-}
-
 init(){
-
-	# Clear any errors from the last run
-        > /tmp/last_error
 
 	if $(passwd --status deck >/dev/null); then
 	  echo "Password is set, continuing...";
@@ -55,7 +36,6 @@ init(){
 
 	if [[ $(find "/home/deck/.local/share/Steam/steamapps/compatdata/" -name "HorizonXI" -type d | wc -l) -gt 1 ]]; then
 		echo "Found too many installation folders, run the uninstall.sh script to get to a clean slate, then try this one again."
-		echo "Found too many installation folders, run the uninstall.sh script to get to a clean slate, then try this one again." > /tmp/last_error
 		send_discord_failure
 		exit 2
 	fi
@@ -64,7 +44,6 @@ init(){
 	if [[ $(echo $config_json | sed 's/ /\n/g' | wc -l) -gt 1 ]]; then
 		echo "too many installations found. try uninstalling one of them, or uninstall all of them with ./uninstall.sh then reinstall with this script."
 		echo $config_json | sed 's/ /\n/g'
-		echo "too many installations found. try uninstalling one of them, or uninstall all of them with ./uninstall.sh then reinstall with this script." > /tmp/last_error
 		send_discord_failure
 		exit 2
 	fi
@@ -151,12 +130,10 @@ check(){
 		launch
 	else
 		echo "Updating version: ${current_version} to ${latest_version}"
-		allow
 		read -p "Whats your discord name (useful in case something goes wrong for debugging, required. Ctrl + C to abort update process)?" discord_name
 		if [[ "discord_name" == "" ]]; then
 			exit 2
 		fi
-		capture
 		update
 		echo "Launching"
 		launch
@@ -261,7 +238,7 @@ END
 	if [[ $(ps -ef | grep steam | wc -l) -le 12 ]]; then
 		echo "Steam isn't running, continuing..."
 	else
-		echo "Steam was still running after killall command" >> /tmp/last_error
+		echo "Steam was still running after killall command"
 	fi
 	config_vdf=${steam_dir}/config/config.vdf
 	echo "Config VDF before adding $app_id"
@@ -337,18 +314,14 @@ update(){
 			add_non_steam_game
 			# Low disk space version
 			if [[ "${sd_link}" == "true" ]]; then
-				allow
 				read -p "Not enough disk space found on the main /home drive, install to SD Card? (Enter to continue, Ctrl + c to abort" </dev/tty
-				capture
 				if [[ ${card_free_space} -le 60 ]]; then
 					echo "There's not enough space on the memory card either. aborting installation"
 					exit 2
 				fi
 				my_link="/home/deck/.local/share/Steam/steamapps/compatdata"
 				if [[ ${home_free_space} -le ${compat_size} ]]; then
-					allow
 					read -p "Theres not enough space to make a backup, continue without backup? (Enter to continue, Ctrl + c to abort)" </dev/tty
-					capture
 					if [[ -L ${my_link} ]] && [[ -e ${my_link} ]]; then
 						echo "Found simlink, nothing further to do here"
 					else
@@ -404,7 +377,7 @@ update(){
 		echo "Continue..."
 	fi
 	echo "Done!"
-	check_success
+        send_discord_success
 
 }
 
@@ -446,11 +419,6 @@ END
 			if [[ ${legacy_steam_id} == "" ]]; then
 				if [[ ${new_steam_id} == "" ]]; then
 					echo "All methods to find a steam ID failed. Maybe just try running it from steam? Launching from commandline failed."
-					if [[ $(cat /tmp/last_error) == "" ]]; then
-						echo "All methods to find a steam ID failed. a" > /tmp/last_error
-					elif [[ $(cat /tmp/last_error) == "Install Success!" ]]; then
-						echo "All methods to find a steam ID failed. b" > /tmp/last_error
-					fi
 					send_discord_failure
 					exit 2
 				else
@@ -474,73 +442,21 @@ END
 		if [[ $(ps -ef | grep steam | wc -l) -le 12 ]]; then
 			restart_steam
 			steam steam://rungameid/${steam_id} 2>/dev/null
+			send_discord_success
 		else
 			steam steam://rungameid/${steam_id} 2>/dev/null
+			send_discord_success
 		fi
 	fi
 }
 
 send_discord_notification() {
 
-	# Make sure last_error is all on one line
-	date >> /tmp/last_error
-	echo ";;;" >> /tmp/last_error
-	sed -i ':a;N;$!ba;s/\n/,/g' /tmp/last_error
-	source /etc/*release
-
-	# Local variables are not needed for continuation runs, and can be excluded from init (variables required to be generated every run)
-	# Simply by defining the error_message variable, we'll see it in the output in discord.
-	local error_message=$(< /tmp/last_error)
-
-	# Capture environment variables
-	local data1=$(printenv | awk '{print}' ORS='\\n')
-
-	# Capture all variables available in the script
-	local data2=$(eval "printf '%q\n' $(printf ' "${!%s@}"' _ {a..z} {A..Z})")
-
-	# List of known bash-specific variables (Omit from report)
-	local data3="FUNCNAME webhook_url opt i data1 data2 BASH BASH_ALIASES BASH_ARGC BASH_ARGV BASH_ARGV0 BASH_CMDS BASH_COMMAND BASH_LINENO BASHOPTS BASHPID BASH_SOURCE BASH_SUBSHELL BASH_VERSINFO BASH_VERSION COMP_WORDBREAKS DIRSTACK EPOCHREALTIME EPOCHSECONDS EUID GROUPS HISTCMD HOSTNAME HOSTTYPE IFS LINENO MACHTYPE OPTERR OPTIND OSTYPE PIPESTATUS PPID PS4 RANDOM SECONDS SHELLOPTS SRANDOM UID"
-
-	# Convert data to arrays; Couldn't figure out how to make this local
-	readarray -t arr1 <<< "$(echo -e "$data1" | sed 's/=.*//' | sort)"
-	readarray -t arr2 <<< "$(echo "$data2" | tr ' ' '\n' | sort)"
-	readarray -t arr3 <<< "$(echo "$data3" | tr ' ' '\n' | sort)"
-
-	# Find unique variables in arr2 not in arr1
-	local unique_to_arr2=$(comm -23 <(printf "%s\n" "${arr2[@]}") <(printf "%s\n" "${arr1[@]}"))
-
-	# Find unique variables in the above result not in arr3
-	local final_result=$(comm -23 <(printf "%s\n" "${unique_to_arr2[@]}") <(printf "%s\n" "${arr3[@]}"))
-
-	# Initialize an empty string
-	local output=""
-
-	# Loop through the variables
-	for var in ${final_result[@]}; do
-	    # Append variable and value to the string with "\n" separator
-	    output+="${var}=${!var}\\n"
-	done
-
-        # Get release file info
-        for line in $(ls /etc/*release); do
-            output+="${line}\\n"
-        done
-
-	# Get release variables
-        for line in $(cat /etc/*release); do
-            sanitized=$(echo $line | sed 's/"//g')
-            output+="${sanitized}\\n"
-        done
-
         log_out=$(curl -s --data-binary @log.out https://paste.rs/)
-        output+="${log_out}\\n"
-
-	# Remove the last "\n" from the string
-	local output=${output%\\n}
 
 	# Send JSON payload with curl
 	# echo "curl -X POST -H \"Content-Type: application/json\" -d \"{\"content\": \"$output\"}\" \"${webhook_url}\""
-	curl -s -X POST -H "Content-Type: application/json" -d "{\"content\": \"#################################################\n$output\n#################################################\n\"}" "${webhook_url}"
+	curl -s -X POST -H "Content-Type: application/json" -d "{\"content\": \"#################################################\n${discord_name} - ${log_out}\n#################################################\n\"}" "${webhook_url}"
 
 }
 
@@ -560,68 +476,35 @@ send_discord_failure(){
 	send_discord_notification
 }
 
-check_success() {
+OUTPUT_LOG=log.out
+OUTPUT_PIPE=output.pipe
 
-	# Trying to make sure this variable shows up, seems to have been missed somehow. maybe we can put critical variables here. time will tell.
-        export horizon_dir="/home/deck/horizon-xi"
-        export current_debug=$(<${horizon_dir}/current_version)
+if [ ! -e $OUTPUT_PIPE ]; then
+    mkfifo $OUTPUT_PIPE
+fi
 
-	if [[ $(cat /tmp/last_error) == "" ]]; then
-		echo "Install Success!" > /tmp/last_error
-		send_discord_success
-	else
-		echo "Seems like there was an error in the installation process"
-		echo "#######################################################################################"
-		cat /tmp/last_error
-		echo "#######################################################################################"
-		send_discord_failure
-	fi
-}
+if [ -e $OUTPUT_LOG ]; then
+    rm $OUTPUT_LOG
+fi
 
-# Array of commands to execute, each on a new line for readability
-commands=(
-	'init'
-	'check'
-)
+exec 3>&1 4>&2
+tee $OUTPUT_LOG < $OUTPUT_PIPE >&3 &
+tpid=$!
+exec > $OUTPUT_PIPE 2>&1
+
+init
+check
+
+exec 1>&3 3>&- 2>&4 4>&-
+wait $tpid
+rm $OUTPUT_PIPE
 
 # Error handling function
 error_exit() {
 	send_discord_failure
-	local next_task_index=$((current_task + 1))
-	echo ""
-	echo " ERROR  ERROR  ERROR  ERROR  ERROR  ERROR  ERROR  ERROR  ERROR  ERROR  ERROR  ERROR "
-	echo ""
-	echo "An error occurred with command: '${commands[$current_task]}'"
-	echo "After fixing the issue, you can continue by pasting the following into your konsole: "
-	echo ""
-	echo "./install-or-update-horizon.sh -c ${next_task_index}."
-	echo ""
 	exit 1
 }
 
-# Function to execute commands from a certain index
-execute_from_index() {
-	for ((i=$1; i<${#commands[@]}; i++)); do
-		current_task=$i
-		eval "${commands[$i]}" || error_exit
-	done
-}
-
-# Check for the continue option (-c) and optional task index
-continue_from=0
-while getopts ":c:" opt; do
-	case $opt in
-		c) continue_from=$OPTARG ;;
-		\?) echo "Invalid option: -$OPTARG" >&2; exit 1 ;;
-		:)  echo "Option -$OPTARG requires an argument." >&2; exit 1 ;;
-	esac
-done
-
 # Set up error trap
 trap 'error_exit' ERR
-
-capture
-
-# Start executing from the provided index, or from the start
-execute_from_index $continue_from
 
