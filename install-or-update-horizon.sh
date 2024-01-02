@@ -120,6 +120,7 @@ check(){
 	        curl -s -L --max-redirs 5 --output "${loader_prefix}/horizon-loader.exe" "https://raw.githubusercontent.com/trentondyck/horizon_scripts/main/horizon-loader.exe"
 	else
 		echo "Bootloader is fine (probably?), continuing..."
+		echo "MD5 sum found - $md"
 	fi
 
 	echo "Checking for version update..."
