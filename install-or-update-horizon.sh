@@ -95,7 +95,7 @@ init(){
 	export nupkg_name=$(echo ${horizon_json} | jq -r '.[] | select(.tag_name=="'${latest_version}'") | .assets[] | select ( .name | endswith ("nupkg") ) | .name ')
 	echo "config_json: $config_json"
 	echo "storage_json: $storage_json"
-	cat "${storage_json}"
+	cat "${storage_json}" || echo "First time install so storage_json does not exist"
 	echo "latest_version: $latest_version"
 	echo "current_version: $current_version"
 }
