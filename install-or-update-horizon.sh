@@ -406,6 +406,11 @@ launch(){
                 # The CRC32 algorithm is only for Big Picture, and possibly even old Big Picture. Regular Steam apps no longer use the CRC algorithm. See here (https://github.com/boppreh/steamgrid/blob/master/games.go#L115-L137) and this comment by DavidoTek that verifies that the CRC calculation is not correct anymore (DavidoTek/ProtonUp-Qt#175 (comment)).
                 # That said, the legacy steam id works on my deck. leaving this blurb here for investigation later.
 
+		# Never had an issue with this but. eh. lets see.
+		python -m venv ./myvenv
+        	. ./myvenv/bin/activate
+		pip install crcmod
+
 export steam_ids_python=$(
 python << END
 import crcmod.predefined
