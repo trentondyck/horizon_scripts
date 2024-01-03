@@ -300,9 +300,7 @@ update(){
 	7z -y x ${nupkg_name}
 	echo "current_version=${latest_version}" > ${horizon_dir}/current_version
 	if [[ ${latest_version} == "v1.0.1" ]]; then
-		if [[ $(ps -ef | grep steam | wc -l) -le 12 ]]; then
 			restart_steam
-		else
 			# Install GE-Proton8-25, known to work with Horizon. Later versions can be found via `/home/deck/.local/bin/protonup --releases`
 			# https://pythonspeed.com/articles/externally-managed-environment-pep-668/
 	                python -m venv ./myvenv
@@ -384,7 +382,6 @@ update(){
 			echo "to update the launcher to the latest version."
 			echo "If the launcher is stuck 'verifying game files', or it opens and minimizes/exits immediately, try downloading in game mode"
 			echo ""
-		fi
 	else
 		# Latest version is not v1.0.1
 		echo "Continue..."
