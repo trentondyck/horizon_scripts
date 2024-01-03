@@ -265,7 +265,7 @@ END
 	cp -f ${horizon_dir}/config.vdf ${config_vdf}
 	echo "Should have copied ${horizon_dir}/config.vdf to $config_vdf"
 	echo "Config VDF after adding $app_id"
-	cat $config_vdf
+	cat $config_vdf | grep "${app_id}" -A6
 
 	restart_steam
 	echo "Successfully added nonsteam game"
