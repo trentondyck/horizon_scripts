@@ -43,7 +43,7 @@ uninstall_init(){
 		fi
 
 	else
-		echo "No SD card found"
+		echo "No SD installation found"
 		if [[ $(sudo find /home/deck/.local/share/Steam/steamapps/compatdata/ -name config.json -type f | grep HorizonXI) ]]; then
 			echo "Deck based install"
 			export config_json=$(sudo find /home/deck/.local/share/Steam/steamapps/compatdata/ -name config.json -type f | grep HorizonXI)
