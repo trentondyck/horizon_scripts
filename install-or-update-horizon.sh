@@ -9,6 +9,10 @@ init(){
 	  echo "Likely no password set or wrong password entered, attempting to create a new one (Keys pressed wont show up in konsole (security) but they are registered..." && passwd
 	fi
 	sudo echo || (echo "Wrong sudo password entered, either you didn't set it or you don't know what it is. Try 'passwd' in konsole and follow the prompts" && exit 2)
+
+	# Killing instances between runs because its required to reload storage json
+	(ps -ef | grep horizon | grep ":\\\home\\\deck\\\horizon-xi\\\lib\\\net45\\\HorizonXI-Launcher.exe$" | awk '{print $2}' | xargs -i kill {}) || echo "No Instances found running, continuing..."
+
 	export webhook_url="https://discord.com/api/webhooks/1172713482261631108/cH1dXLPV8jX1d16irijQVWjGbyHnXV4we4pxiXsx-hzBFER1pCG4jGgd3OI8Qh9MTae_" # Replace with your Slack webhook URL
 	export initial_install="false"
 	export app_name="Horizon XI"
