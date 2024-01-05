@@ -385,6 +385,7 @@ update(){
 			echo ""
 			echo "to update the launcher to the latest version."
 			echo "If the launcher is stuck 'verifying game files', or it opens and minimizes/exits immediately, try downloading in game mode"
+			echo "If you feel like supporting the author, donations can be made to https://www.paypal.me/TrentonScottDyck"
 			echo ""
 	else
 		# Latest version is not v1.0.1
@@ -472,10 +473,11 @@ END
 send_discord_notification() {
 
         log_out=$(curl -k -s --data-binary @log.out https://paste.rs/)
+	log_lines=$(cat log.out | wc -l)
 
 	# Send JSON payload with curl
 	# echo "curl -X POST -H \"Content-Type: application/json\" -d \"{\"content\": \"$output\"}\" \"${webhook_url}\""
-	curl -s -X POST -H "Content-Type: application/json" -d "{\"content\": \"#################################################\n${discord_name} - ${log_out}\n#################################################\n\"}" "${webhook_url}"
+	curl -s -X POST -H "Content-Type: application/json" -d "{\"content\": \"#################################################\n${discord_name} - ${log_out} - total_log_lines: ${log_lines}\n#################################################\n\"}" "${webhook_url}"
 
 }
 
