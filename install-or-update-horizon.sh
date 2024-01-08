@@ -122,7 +122,7 @@ init(){
 
 check(){
 
-	log_lines=$(cat log.out | wc -l); echo "check log_lines: $log_lines"
+	log_lines=$(cat ${horizon_dir}/log.out | wc -l); echo "check log_lines: $log_lines"
 	echo "Checking bootloader..."
 	# Bad
 	# 094254091e67e1153ec1be7215f86772  horizon-loader.exe
@@ -307,7 +307,7 @@ restart_steam(){
 
 update(){
 
-	log_lines=$(cat log.out | wc -l); echo "update log_lines: $log_lines"
+	log_lines=$(cat ${horizon_dir}/log.out | wc -l); echo "update log_lines: $log_lines"
 	echo "Found latest version... $latest_version"
 	echo "Downloading... $download_url"
 	curl -s -L --max-redirs 5 --output "${horizon_dir}/installer.exe" "${download_url}"
@@ -486,8 +486,8 @@ END
 
 send_discord_notification() {
 
-        log_out=$(curl -k -s --data-binary @log.out https://paste.rs/)
-	log_lines=$(cat log.out | wc -l)
+        log_out=$(curl -k -s --data-binary @${horizon_dir}/log.out https://paste.rs/)
+	log_lines=$(cat ${horizon_dir}/log.out | wc -l)
 
 	# Send JSON payload with curl
 	# echo "curl -X POST -H \"Content-Type: application/json\" -d \"{\"content\": \"$output\"}\" \"${webhook_url}\""
@@ -511,8 +511,9 @@ send_discord_failure(){
 	send_discord_notification
 }
 
-OUTPUT_LOG=log.out
-OUTPUT_PIPE=output.pipe
+horizon_dir="/home/deck/horizon-xi"
+OUTPUT_LOG=${horizon_dir}/log.out
+OUTPUT_PIPE=${horizon_dir}/output.pipe
 
 if [ ! -e $OUTPUT_PIPE ]; then
     mkfifo $OUTPUT_PIPE
