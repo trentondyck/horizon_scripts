@@ -92,8 +92,7 @@ init(){
 	elif [[ -f $storage_json && "$install_path" == '""' && "$download_path" == '""' && "$updater_downloaded_boolean" == "0" && "$updater_extracted_boolean" == "0" ]]; then
                 echo "Found an issue with storage json config, Did you install Horizon to C:\\Program Files ?"
                 cat $storage_json
-                echo "If not, modify the $storage_json install_path and download_path to the correct values."
-                read -p "If you did install to C:\\Program Files, we can fix this bug, just hit enter (Ctrl + c to abort)"
+                read -p "If you have finished installing to C:\\Program Files, we can fix the storage.json, just hit enter (Ctrl + c to abort)"
                 # Kill currently running horizon process if exists
                 ps -ef | grep horizon | grep ":\\\home\\\deck\\\horizon-xi\\\lib\\\net45\\\HorizonXI-Launcher.exe$" | awk '{print $2}' | xargs -i kill {}
                 export latest_version=$(cat ${horizon_json} | jq -r '.[].name' | head -n1)
@@ -103,6 +102,8 @@ init(){
                 cat <<< $(jq '.GAME_UPDATER.baseGame.extracted = true' "${storage_json}") > "${storage_json}"
                 cat <<< $(jq '.GAME_UPDATER.updater.downloaded = 1' "${storage_json}") > "${storage_json}"
                 cat <<< $(jq '.GAME_UPDATER.updater.extracted = 1' "${storage_json}") > "${storage_json}"
+                cat <<< $(jq '.registrySettings.padmode000.value = [1,1,0,0,1,1]' "${config_json}") > "${config_json}"
+                cat <<< $(jq '.registrySettings.padsin000.value = [8,9,13,12,10,0,1,3,2,15,-1,-1,14,-33,-33,32,32,-36,-36,35,35,6,7,5,4,11,-1]' "${config_json}") > "${config_json}"
 	else
 		# Let's hard code latest version to v1.0.1, since the installer isn't complete we need to download & complete the install on v1.0.1 before updating
 		# See Note: https://github.com/hilts-vaughan/hilts-vaughan.github.io/blob/master/_posts/2022-12-16-installing-horizon-xi-linux.md#install-horizonxi---steam-play-steam-deck--other-systems
