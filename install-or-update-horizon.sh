@@ -19,6 +19,9 @@ init(){
 	export raw_github_url="https://raw.githubusercontent.com/trentondyck/horizon_scripts/main"
 	export sd_link="false"
 	export horizon_dir="/home/deck/horizon-xi"
+	echo "Creating required directories... ${horizon_dir} ..."
+	mkdir -p ${horizon_dir}
+	sudo chown -R deck: ${horizon_dir}
 	export steam_dir="/home/deck/.local/share/Steam"
 	if [[ $(df -k | grep " /home$" | awk '{print $4}') -le 66124876 ]]; then
 		export compat_size=$((cd ${steam_dir}/steamapps && du --max-depth 1 -h) | grep compatdata | awk '{print $1}' | sed 's/G//g')
@@ -64,7 +67,7 @@ init(){
 	export updater_downloaded_boolean=$(cat $storage_json | jq '.GAME_UPDATER.updater.downloaded')
 	export updater_extracted_boolean=$(cat $storage_json | jq '.GAME_UPDATER.updater.extracted')
 	curl -s "https://api.github.com/repos/HorizonFFXI/HorizonXI-Launcher-Binaries/releases" > ${horizon_dir}/horizon.json
-	horizon_json="/home/deck/horizon-xi/horizon.json"
+	horizon_json="${horizon_dir}/horizon.json"
 	if [[ ${base_downloaded_boolean} == "true" && ${base_extracted_boolean} == "true" ]]; then
 		export latest_version=$(cat ${horizon_json} | jq -r '.[].name' | head -n1)
 		# Since everythings done downloading we can clean up
@@ -296,9 +299,6 @@ restart_steam(){
 
 update(){
 
-	echo "Creating required directories... ${horizon_dir} ..."
-	mkdir -p ${horizon_dir}
-	sudo chown -R deck: ${horizon_dir}
 	echo "Found latest version... $latest_version"
 	echo "Downloading... $download_url"
 	curl -s -L --max-redirs 5 --output "${horizon_dir}/installer.exe" "${download_url}"
