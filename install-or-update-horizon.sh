@@ -67,6 +67,8 @@ init(){
 	# Not actually booleans, this must have changed.
 	export updater_downloaded_boolean=$(cat $storage_json | jq '.GAME_UPDATER.updater.downloaded')
 	export updater_extracted_boolean=$(cat $storage_json | jq '.GAME_UPDATER.updater.extracted')
+	export install_path=$(cat $storage_json | jq '.paths.installPath.path')
+	export download_path=$(cat $storage_json | jq '.paths.downloadPath.path')
 	curl -s "https://api.github.com/repos/HorizonFFXI/HorizonXI-Launcher-Binaries/releases" > ${horizon_dir}/horizon.json
 	horizon_json="${horizon_dir}/horizon.json"
 	if [[ ${base_downloaded_boolean} == "true" && ${base_extracted_boolean} == "true" ]]; then
@@ -97,6 +99,8 @@ init(){
                 export latest_version=$(cat ${horizon_json} | jq -r '.[].name' | head -n1)
                 cat <<< $(jq '.paths.installPath.path = "C:\\Program Files\\HorizonXI\\Game"' "${storage_json}") > "${storage_json}"
                 cat <<< $(jq '.paths.downloadPath.path = "C:\\Program Files\\HorizonXI\\Downloads"' "${storage_json}") > "${storage_json}"
+                cat <<< $(jq '.GAME_UPDATER.baseGame.downloaded = true' "${storage_json}") > "${storage_json}"
+                cat <<< $(jq '.GAME_UPDATER.baseGame.extracted = true' "${storage_json}") > "${storage_json}"
                 cat <<< $(jq '.GAME_UPDATER.updater.downloaded = 1' "${storage_json}") > "${storage_json}"
                 cat <<< $(jq '.GAME_UPDATER.updater.extracted = 1' "${storage_json}") > "${storage_json}"
 	else
