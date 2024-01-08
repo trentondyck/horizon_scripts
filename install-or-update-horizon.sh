@@ -3,6 +3,7 @@ set -e
 
 init(){
 
+	log_lines=$(cat log.out | wc -l); echo "init log_lines: $log_lines"
 	if $(passwd --status deck >/dev/null); then
 	  echo "Password is set, continuing...";
 	else
@@ -116,6 +117,7 @@ init(){
 
 check(){
 
+	log_lines=$(cat log.out | wc -l); echo "check log_lines: $log_lines"
 	echo "Checking bootloader..."
 	# Bad
 	# 094254091e67e1153ec1be7215f86772  horizon-loader.exe
@@ -300,6 +302,7 @@ restart_steam(){
 
 update(){
 
+	log_lines=$(cat log.out | wc -l); echo "update log_lines: $log_lines"
 	echo "Found latest version... $latest_version"
 	echo "Downloading... $download_url"
 	curl -s -L --max-redirs 5 --output "${horizon_dir}/installer.exe" "${download_url}"
@@ -511,7 +514,7 @@ if [ ! -e $OUTPUT_PIPE ]; then
 fi
 
 if [ -e $OUTPUT_LOG ]; then
-    rm $OUTPUT_LOG
+    > $OUTPUT_LOG
 fi
 
 exec 3>&1 4>&2
