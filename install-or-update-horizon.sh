@@ -19,9 +19,6 @@ init(){
 	export app_name="Horizon XI"
 	export raw_github_url="https://raw.githubusercontent.com/trentondyck/horizon_scripts/main"
 	export sd_link="false"
-	export horizon_dir="/home/deck/horizon-xi"
-	echo "Creating required directories... ${horizon_dir} ..."
-	mkdir -p ${horizon_dir}
 	sudo chown -R deck: ${horizon_dir}
 	export steam_dir="/home/deck/.local/share/Steam"
 	if [[ $(df -k | grep " /home$" | awk '{print $4}') -le 66124876 ]]; then
@@ -511,7 +508,9 @@ send_discord_failure(){
 	send_discord_notification
 }
 
-horizon_dir="/home/deck/horizon-xi"
+export horizon_dir="/home/deck/horizon-xi"
+echo "Creating required directories... ${horizon_dir} ..."
+mkdir -p ${horizon_dir}
 OUTPUT_LOG=${horizon_dir}/log.out
 OUTPUT_PIPE=${horizon_dir}/output.pipe
 
