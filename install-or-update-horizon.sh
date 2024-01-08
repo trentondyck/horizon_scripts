@@ -93,12 +93,13 @@ init(){
                 read -p "If you did install to C:\\Program Files, we can fix this bug, just hit enter (Ctrl + c to abort)"
                 # Kill currently running horizon process if exists
                 ps -ef | grep horizon | grep ":\\\home\\\deck\\\horizon-xi\\\lib\\\net45\\\HorizonXI-Launcher.exe$" | awk '{print $2}' | xargs -i kill {}
+                export latest_version=$(cat ${horizon_json} | jq -r '.[].name' | head -n1)
                 cat <<< $(jq '.paths.installPath.path = "C:\\Program Files\\HorizonXI\\Game"' "${storage_json}") > "${storage_json}"
                 cat <<< $(jq '.paths.downloadPath.path = "C:\\Program Files\\HorizonXI\\Downloads"' "${storage_json}") > "${storage_json}"
                 cat <<< $(jq '.GAME_UPDATER.updater.downloaded = 1' "${storage_json}") > "${storage_json}"
                 cat <<< $(jq '.GAME_UPDATER.updater.extracted = 1' "${storage_json}") > "${storage_json}"
-#	else
-#		# Let's hard code latest version to v1.0.1, since the installer isn't complete we need to download & complete the install on v1.0.1 before updating
+	else
+		# Let's hard code latest version to v1.0.1, since the installer isn't complete we need to download & complete the install on v1.0.1 before updating
 		# See Note: https://github.com/hilts-vaughan/hilts-vaughan.github.io/blob/master/_posts/2022-12-16-installing-horizon-xi-linux.md#install-horizonxi---steam-play-steam-deck--other-systems
 		echo "Seems like theres no storage json, hard coding to v1.0.1"
 		export latest_version="v1.0.1"
