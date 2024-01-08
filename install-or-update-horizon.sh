@@ -63,9 +63,10 @@ init(){
 	# Not actually booleans, this must have changed.
 	export updater_downloaded_boolean=$(cat $storage_json | jq '.GAME_UPDATER.updater.downloaded')
 	export updater_extracted_boolean=$(cat $storage_json | jq '.GAME_UPDATER.updater.extracted')
-	export horizon_json=$(curl -s "https://api.github.com/repos/HorizonFFXI/HorizonXI-Launcher-Binaries/releases" | jq '.')
+	curl -s "https://api.github.com/repos/HorizonFFXI/HorizonXI-Launcher-Binaries/releases" > ${horizon_dir}/horizon.json
+	horizon_json="/home/deck/horizon-xi/horizon.json"
 	if [[ ${base_downloaded_boolean} == "true" && ${base_extracted_boolean} == "true" ]]; then
-		export latest_version=$(echo ${horizon_json} | jq -r '.[].name' | head -n1)
+		export latest_version=$(cat ${horizon_json} | jq -r '.[].name' | head -n1)
 		# Since everythings done downloading we can clean up
 		echo "Searching home directory for horizon zip, this may take a while..."
 		sudo find /home -name "HorizonXI.zip" -type f | sed 's/ /\\ /g' | xargs -i rm {}
@@ -78,7 +79,7 @@ init(){
 
 	elif [[ (-f ${horizon_dir}/current_version) && (! -f ${storage_json}) ]]; then 
 		current_version=$(cat ${horizon_dir}/current_version)
-                export latest_version=$(echo ${horizon_json} | jq -r '.[].name' | head -n1)
+                export latest_version=$(cat ${horizon_json} | jq -r '.[].name' | head -n1)
                 # Since everythings done downloading we can clean up
                 echo "Base and extracted not true, Searching home directory for horizon zip, this may take a while..."
                 sudo find /home -name "HorizonXI.zip" -type f | sed 's/ /\\ /g' | xargs -i rm {}
@@ -99,8 +100,8 @@ init(){
 		echo "Seems like theres no storage json, hard coding to v1.0.1"
 		export latest_version="v1.0.1"
 	fi
-	export download_url=$(echo ${horizon_json} | jq -r '.[] | select(.tag_name=="'${latest_version}'") | .assets[] | select ( .name | endswith ("exe") ) | .browser_download_url')
-	export nupkg_name=$(echo ${horizon_json} | jq -r '.[] | select(.tag_name=="'${latest_version}'") | .assets[] | select ( .name | endswith ("nupkg") ) | .name ')
+	export download_url=$(cat ${horizon_json} | jq -r '.[] | select(.tag_name=="'${latest_version}'") | .assets[] | select ( .name | endswith ("exe") ) | .browser_download_url')
+	export nupkg_name=$(cat ${horizon_json} | jq -r '.[] | select(.tag_name=="'${latest_version}'") | .assets[] | select ( .name | endswith ("nupkg") ) | .name ')
 	echo "config_json: $config_json"
 	echo "storage_json: $storage_json"
 	cat "${storage_json}" || echo "First time install so storage_json does not exist"
