@@ -1,29 +1,9 @@
 #!/bin/bash
 set -e
 
-capture(){
-# Save the original stderr
-exec 3>&2
-
-# Redirect stderr to a file
-exec 2> /tmp/last_error
-}
-
-allow(){
-# Restore stderr to its original state
-exec 2>&3
-
-# Close the temporary file descriptor
-exec 3>&-
-}
-
 uninstall_init(){
 
-	> /tmp/last_error
-
-	allow
 	read -p "Starting uninstall process... continue? (ctrl +c to abort, enter to continue)" somevar
-	capture
 
 	if $(passwd --status deck >/dev/null); then
 	  echo "Password is set, continuing...";
@@ -103,7 +83,6 @@ END
                                 export steam_id=${steam_id_grep}
                         fi
                 fi
-		check_success
 
 }
 
@@ -134,7 +113,7 @@ uninstall(){
 		# This may be dangerous, we may want to get this from python as with the installer script
 		app_id=$(ps -ef | grep horizon | grep AppId | awk '{print $10}' | sed 's/AppId=//g')
 		killall horizon
-		steam steam://uninstall/${app_id}
+		steam steam://uninstall/${app_id} || send_discord_failure
 		rm -Rf ${horizon_directory}
 	done
 
@@ -142,45 +121,13 @@ uninstall(){
 
 send_discord_notification() {
 
-	# Local variables are not needed for continuation runs, and can be excluded from init (variables required to be generated every run)
-	# Simply by defining the error_message variable, we'll see it in the output in discord.
-	local error_message=$(< /tmp/last_error)
 
-	# Capture environment variables
-	local data1=$(printenv | awk '{print}' ORS='\\n')
+        log_out=$(curl -k -s --data-binary @log.out https://paste.rs/)
+        log_lines=$(cat log.out | wc -l)
 
-	# Capture all variables available in the script
-	local data2=$(eval "printf '%q\n' $(printf ' "${!%s@}"' _ {a..z} {A..Z})")
-
-	# List of known bash-specific variables (Omit from report)
-	local data3="FUNCNAME webhook_url opt i data1 data2 BASH BASH_ALIASES BASH_ARGC BASH_ARGV BASH_ARGV0 BASH_CMDS BASH_COMMAND BASH_LINENO BASHOPTS BASHPID BASH_SOURCE BASH_SUBSHELL BASH_VERSINFO BASH_VERSION COMP_WORDBREAKS DIRSTACK EPOCHREALTIME EPOCHSECONDS EUID GROUPS HISTCMD HOSTNAME HOSTTYPE IFS LINENO MACHTYPE OPTERR OPTIND OSTYPE PIPESTATUS PPID PS4 RANDOM SECONDS SHELLOPTS SRANDOM UID"
-
-	# Convert data to arrays; Couldn't figure out how to make this local
-	readarray -t arr1 <<< "$(echo -e "$data1" | sed 's/=.*//' | sort)"
-	readarray -t arr2 <<< "$(echo "$data2" | tr ' ' '\n' | sort)"
-	readarray -t arr3 <<< "$(echo "$data3" | tr ' ' '\n' | sort)"
-
-	# Find unique variables in arr2 not in arr1
-	local unique_to_arr2=$(comm -23 <(printf "%s\n" "${arr2[@]}") <(printf "%s\n" "${arr1[@]}"))
-
-	# Find unique variables in the above result not in arr3
-	local final_result=$(comm -23 <(printf "%s\n" "${unique_to_arr2[@]}") <(printf "%s\n" "${arr3[@]}"))
-
-	# Initialize an empty string
-	local output=""
-
-	# Loop through the variables
-	for var in ${final_result[@]}; do
-	    # Append variable and value to the string with "\n" separator
-	    output+="${var}=${!var}\\n"
-	done
-
-	# Remove the last "\n" from the string
-	local output=${output%\\n}
-
-	# Send JSON payload with curl
-	# echo "curl -X POST -H \"Content-Type: application/json\" -d \"{\"content\": \"$output\"}\" \"${webhook_url}\""
-	curl -s -X POST -H "Content-Type: application/json" -d "{\"content\": \"#################################################\n$output\n#################################################\n\"}" "${webhook_url}"
+        # Send JSON payload with curl
+        # echo "curl -X POST -H \"Content-Type: application/json\" -d \"{\"content\": \"$output\"}\" \"${webhook_url}\""
+        curl -s -X POST -H "Content-Type: application/json" -d "{\"content\": \"#################################################\n Uninstall.sh ${discord_name} - ${log_out} - total_log_lines: ${log_lines}\n#################################################\n\"}" "${webhook_url}"
 
 }
 
@@ -194,62 +141,44 @@ send_discord_failure(){
 	send_discord_notification
 }
 
-check_success() {
-
-	if [[ $(cat /tmp/last_error) == "" ]]; then
-		echo "Uninstall Success!" > /tmp/last_error
-		send_discord_success
-	else
-		echo "Seems like there was an error in the uninstallation process"
-		send_discord_failure
-	fi
-}
-
-# Array of commands to execute, each on a new line for readability
-commands=(
-	'uninstall_init'
-	'uninstall'
-)
-
 # Error handling function
 error_exit() {
-	send_discord_failure
-	local next_task_index=$((current_task + 1))
 	echo ""
 	echo " ERROR  ERROR  ERROR  ERROR  ERROR  ERROR  ERROR  ERROR  ERROR  ERROR  ERROR  ERROR "
 	echo ""
-	echo "An error occurred with command: '${commands[$current_task]}'"
-	echo "After fixing the issue, you can continue by pasting the following into your konsole: "
-	echo ""
-	echo "./install-or-update-horizon.sh -c ${next_task_index}."
-	echo ""
+	send_discord_failure
 	exit 1
 }
 
-# Function to execute commands from a certain index
-execute_from_index() {
-	for ((i=$1; i<${#commands[@]}; i++)); do
-		current_task=$i
-		eval "${commands[$i]}" || error_exit
-	done
+OUTPUT_LOG=log.out
+OUTPUT_PIPE=output.pipe
+
+if [ ! -e $OUTPUT_PIPE ]; then
+    mkfifo $OUTPUT_PIPE
+fi
+
+if [ -e $OUTPUT_LOG ]; then
+    rm $OUTPUT_LOG
+fi
+
+exec 3>&1 4>&2
+tee $OUTPUT_LOG < $OUTPUT_PIPE >&3 &
+tpid=$!
+exec > $OUTPUT_PIPE 2>&1
+
+uninstall_init
+uninstall
+
+exec 1>&3 3>&- 2>&4 4>&-
+wait $tpid
+rm $OUTPUT_PIPE
+
+# Error handling function
+error_exit() {
+        send_discord_failure
+        exit 1
 }
-
-# Check for the continue option (-c) and optional task index
-continue_from=0
-while getopts ":c:" opt; do
-	case $opt in
-		c) continue_from=$OPTARG ;;
-		\?) echo "Invalid option: -$OPTARG" >&2; exit 1 ;;
-		:)  echo "Option -$OPTARG requires an argument." >&2; exit 1 ;;
-	esac
-done
-
 
 # Set up error trap
 trap 'error_exit' ERR
-
-capture
-
-# Start executing from the provided index, or from the start
-execute_from_index $continue_from
 

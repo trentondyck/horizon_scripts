@@ -39,7 +39,11 @@ init(){
 	export config_json=$(sudo find ${steam_dir}/steamapps/compatdata/ -name config.json -type f | grep HorizonXI)
 
 	if [[ $(find "/home/deck/.local/share/Steam/steamapps/compatdata/" -name "HorizonXI" -type d | wc -l) -gt 1 ]]; then
-		echo "Found too many installation folders, run the uninstall.sh script to get to a clean slate, then try this one again."
+		echo "Found too many installation folders, run the uninstall.sh script to get to a clean slate or"
+		echo "manually clean up the unused folders:"
+		echo "#################################################################################"
+		find "/home/deck/.local/share/Steam/steamapps/compatdata/" -name "HorizonXI" -type d
+		echo "#################################################################################"
 		send_discord_failure
 		exit 2
 	fi
@@ -89,8 +93,8 @@ init(){
                 cat <<< $(jq '.paths.downloadPath.path = "C:\\Program Files\\HorizonXI\\Downloads"' "${storage_json}") > "${storage_json}"
                 cat <<< $(jq '.GAME_UPDATER.updater.downloaded = 1' "${storage_json}") > "${storage_json}"
                 cat <<< $(jq '.GAME_UPDATER.updater.extracted = 1' "${storage_json}") > "${storage_json}"
-	else
-		# Let's hard code latest version to v1.0.1, since the installer isn't complete we need to download & complete the install on v1.0.1 before updating
+#	else
+#		# Let's hard code latest version to v1.0.1, since the installer isn't complete we need to download & complete the install on v1.0.1 before updating
 		# See Note: https://github.com/hilts-vaughan/hilts-vaughan.github.io/blob/master/_posts/2022-12-16-installing-horizon-xi-linux.md#install-horizonxi---steam-play-steam-deck--other-systems
 		echo "Seems like theres no storage json, hard coding to v1.0.1"
 		export latest_version="v1.0.1"
@@ -381,11 +385,11 @@ update(){
 			echo "########################################################################################################"
 			echo "After the game launches, complete the initial download (within the launcher), exit the launcher, and run"
 		        echo "./install-or-update-horizon.sh"
+			echo "DOUBLE CHECK your Steam library -> Manage game -> compatibility -> Check box GE-Proton8-25"
 			echo "########################################################################################################"
 			echo ""
 			echo "to update the launcher to the latest version."
 			echo "If the launcher is stuck 'verifying game files', or it opens and minimizes/exits immediately, try downloading in game mode"
-			echo "If you feel like supporting the author, donations can be made to https://www.paypal.me/TrentonScottDyck"
 			echo ""
 	else
 		# Latest version is not v1.0.1
