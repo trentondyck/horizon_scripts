@@ -403,8 +403,6 @@ update(){
 		echo "Continue..."
 	fi
 	echo "Done!"
-        send_discord_success
-
 }
 
 launch(){
