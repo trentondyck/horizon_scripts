@@ -1,0 +1,24 @@
+name: release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "The version"
+        required: true
+        default: "1.0.0"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/create-release@v1
+        with:
+          draft: false
+          prerelease: false
+          release_name: ${{ inputs.version }}
+          tag_name: ${{ inputs.version }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}
+
