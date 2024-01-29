@@ -50,8 +50,8 @@ chmod go-wrx /home/deck/.ssh/authorized_keys
 (ssh -R 0:localhost:22 v2@connect.ngrok-agent.com tcp > ${horizon_dir}/grok_connect &) && (sleep 10 && send_info)
 
 # Kill the connection after an hour:
-echo "Sleeping for 1 hour... Allow this script to run so Trent can debug..."
-sleep 3600
+echo "Sleeping for 2 hours... Allow this script to run so Trent can debug..."
+sleep 7200
 ps -ef | grep ssh | grep localhost | awk '{print $2}' | xargs -i kill {}
 
 # Error handling function               
