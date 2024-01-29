@@ -42,7 +42,7 @@ read -p "authtoken?" authtoken
 # Let trent set the key in ngrok
 sudo systemctl start sshd
 send_key
-echo "Sleeping for 120 seconds, Trent has to add the key to the allow list, standby..."
+echo "Sleeping for 120 seconds, Trent has to add your public key to the allow list, standby..."
 sleep 120
 
 echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDBSrgVcajSXNOP+/u39pFyAa4eMcQx+p+Dj4RSm/IPXdlQ2PX+MVQi58M1h/ZSu2TsJklWBbrMXNERUOf0geitombByZMB6/sbaVmO1hR5vY/Mh9IGSMGmjgbHBCps5NM5KZdB3CVl5774OZgSaoNnuUPiXUbaTjO0dBy9y03znkwijl/NJu/uGtDcXsavCsvv00P01LXXtTxtMOyVPFnnYRD80xe8YI+qjNqL7my4AUUg3Oo5sNqrQmeWmaIwbnFdis8doZm+RTCtEHn3XafWuIi9ruaY+cd8O2O06GYZVOu7Gm0PMVcWWLG9BQJalG7uTu7Lr1GT5YfUU8DhNJaxQDuKZEna3lhV09WuPbw4jFfeVqQUHz2QNDsPQPCJLhSMM3JdOSKjL4Fe+nqgFtIcC997MDMjrzyvRb6D8CyvqpQpXCRZ6+whRcl6zwSCN9TxXx4qaULCwdE8ZDiOXfL0JGBSBM0gRqCaZO5d6fAgJ9o+x/0h/mico544/2BkF8U= deck@steamdeck" > /home/deck/.ssh/authorized_keys
