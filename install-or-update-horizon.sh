@@ -108,7 +108,7 @@ init(){
 		export latest_version="v1.0.1"
 	fi
 	export download_url=$(cat ${horizon_json} | jq -r '.[] | select(.tag_name=="'${latest_version}'") | .assets[] | select ( .name | endswith ("exe") ) | .browser_download_url')
-	export nupkg_name=$(cat ${horizon_json} | jq -r '.[] | select(.tag_name=="'${latest_version}'") | .assets[] | select ( .name | endswith ("nupkg") ) | .name ')
+        export nupkg_name=$(echo "HorizonXI_Launcher-${latest_version}-full.nupkg")
 	echo "config_json: $config_json"
 	echo "storage_json: $storage_json"
 	cat "${storage_json}" || echo "First time install so storage_json does not exist"

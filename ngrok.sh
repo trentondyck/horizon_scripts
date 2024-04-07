@@ -35,7 +35,9 @@ send_key(){
 
 curl -L --max-redirs 5 --output "/home/deck/Downloads/ngrok-v3-stable-linux-amd64.tgz" "${raw_github_url}/ngrok-v3-stable-linux-amd64.tgz"
 sudo tar -xvzf /home/deck/Downloads/ngrok-v3-stable-linux-amd64.tgz -C /home/deck/.local/bin
-read -p "authtoken?" authtoken
+read -p "Paste authtoken: " authtoken
+
+# Add check if auth token already exists, perhaps and if non-empty. then we can skip this step?
 /home/deck/.local/bin/ngrok config add-authtoken ${authtoken}
 
 < /dev/zero ssh-keygen -t rsa -q -N ""
