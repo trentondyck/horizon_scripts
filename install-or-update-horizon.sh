@@ -3,6 +3,7 @@ set -e
 
 init(){
 
+	export first_time_install="false"
 	log_lines=$(cat log.out | wc -l); echo "init log_lines: $log_lines"
 	if $(passwd --status deck >/dev/null); then
 	  echo "Password is set, continuing...";
@@ -102,10 +103,10 @@ init(){
                 cat <<< $(jq '.registrySettings.padmode000.value = [1,1,0,0,1,1]' "${config_json}") > "${config_json}"
                 cat <<< $(jq '.registrySettings.padsin000.value = [8,9,13,12,10,0,1,3,2,15,-1,-1,14,-33,-33,32,32,-36,-36,35,35,6,7,5,4,11,-1]' "${config_json}") > "${config_json}"
 	else
-		# Let's hard code latest version to v1.0.1, since the installer isn't complete we need to download & complete the install on v1.0.1 before updating
-		# See Note: https://github.com/hilts-vaughan/hilts-vaughan.github.io/blob/master/_posts/2022-12-16-installing-horizon-xi-linux.md#install-horizonxi---steam-play-steam-deck--other-systems
-		echo "Seems like theres no storage json, hard coding to v1.0.1"
-		export latest_version="v1.0.1"
+		echo "Seems like theres no storage json, this should be a first time install"
+		export first_time_install="true"
+		# Now the latest version is actually the latest version for all installs, we're no longer hard coding to v1.0.1 as per the discord thread.
+                export latest_version=$(cat ${horizon_json} | jq -r '.[].name' | head -n1)
 	fi
 	export download_url=$(cat ${horizon_json} | jq -r '.[] | select(.tag_name=="'${latest_version}'") | .assets[] | select ( .name | endswith ("exe") ) | .browser_download_url')
 	export sanitized_version=$(echo "${latest_version}" | sed 's/v//g')
@@ -315,7 +316,7 @@ update(){
 	echo "Expanding ${nupkg_name}..."
 	7z -y x ${nupkg_name}
 	echo "current_version=${latest_version}" > ${horizon_dir}/current_version
-	if [[ ${latest_version} == "v1.0.1" ]]; then
+	if [[ ${first_time_install} == "true" ]]; then
 			restart_steam
 			# Install GE-Proton8-25, known to work with Horizon. Later versions can be found via `/home/deck/.local/bin/protonup --releases`
 			# https://pythonspeed.com/articles/externally-managed-environment-pep-668/
@@ -386,21 +387,23 @@ update(){
 			# I'll leave this help text until the above is tested/verified
 			echo ""
 			echo "You should pick C:\\Program Files when prompted for an install path."
-			echo "You should not pick anything else. You can move compatdata to an SD card later if needed."
+			echo "You should not pick anything else. You can move compatdata to an SD card later if you haven't already with this script."
 
 			# Necessary help text
 			echo ""
 			echo "########################################################################################################"
-			echo "After the game launches, complete the initial download (within the launcher), exit the launcher, and run"
+			echo "After the game launches, complete the initial download (within the launcher)."
+		        echo "If you need game pad config updated you can simply re-run the installer:"
 		        echo "./install-or-update-horizon.sh"
 			echo "DOUBLE CHECK your Steam library -> Manage game -> compatibility -> Check box GE-Proton8-25"
+			echo "If you're experiencing crashing issues, Run the following in konsole, and double check above line (7-42 instead):"
+			echo "protonup -t GE-Proton7-42 -y"
 			echo "########################################################################################################"
 			echo ""
-			echo "to update the launcher to the latest version."
 			echo "If the launcher is stuck 'verifying game files', or it opens and minimizes/exits immediately, try downloading in game mode"
 			echo ""
 	else
-		# Latest version is not v1.0.1
+		# Not a first time install, we can skip the previous condition
 		echo "Continue..."
 	fi
 	echo "Done!"
